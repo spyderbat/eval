@@ -1,9 +1,5 @@
 # Container Escape to the Host System
 
-## Pre-Requisites
-
-Make sure the cluster is running and your Kubectl configuration is set up to access the cluster. If not, follow [these steps](../getting-started.md) to get started.
-
 ## Running the Exploit
 
 Follow the guide <a href="https://madhuakula.com/kubernetes-goat/docs/scenarios/scenario-4/container-escape-to-the-host-system-in-kubernetes-containers/welcome" target="_blank">in the Kubernetes Goat documentation</a>.
