@@ -1,0 +1,15 @@
+repos:
+  - repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
+    rev: v0.3.3post1
+    hooks:
+      - id: pre-commit-update
+        args: [--dry-run]
+  - repo: https://github.com/spyderbat/spyder-scan
+    rev: v1.0.0
+    hooks:
+      - id: spyder-scan
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: v3.80.3
+    hooks:
+      - id: trufflehog
+        entry: trufflehog git file://. --since-commit HEAD --no-verification --fail

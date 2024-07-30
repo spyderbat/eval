@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guidebook-deployment
+  labels:
+    app: guidebook
+    {{- include "spyderbat-eval.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: guidebook
+  template:
+    metadata:
+      name: guidebook
+      labels:
+          app: guidebook
+    spec:
+      # serviceAccountName: {{ include "spyderbat-eval.serviceAccountName" . }}
+      containers:
+        - name: spyderbat-eval-guidebook
+          image: "spyderbat/eval-guidebook:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guidebook-service
+  labels:
+    app: guidebook
+    {{- include "spyderbat-eval.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: guidebook
+
