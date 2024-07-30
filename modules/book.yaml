@@ -1,10 +1,18 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: guidebook
+  labels:
+    managed-by: spyderbat-eval
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: guidebook-deployment
+  namespace: guidebook
   labels:
     app: guidebook
-    {{- include "spyderbat-eval.labels" . | nindent 4 }}
+    managed-by: spyderbat-eval
 spec:
   replicas: 1
   selector:
@@ -16,11 +24,10 @@ spec:
       labels:
           app: guidebook
     spec:
-      # serviceAccountName: {{ include "spyderbat-eval.serviceAccountName" . }}
       containers:
         - name: spyderbat-eval-guidebook
-          image: "spyderbat/eval-guidebook:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "public.ecr.aws/a6j2k0g1/spyderbat-eval-guidebook:latest"
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 3000
@@ -30,9 +37,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: guidebook-service
+  namespace: guidebook
   labels:
     app: guidebook
-    {{- include "spyderbat-eval.labels" . | nindent 4 }}
+    managed-by: spyderbat-eval
 spec:
   ports:
     - port: 80
@@ -41,4 +49,3 @@ spec:
       name: http
   selector:
     app: guidebook
-

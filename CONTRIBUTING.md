@@ -38,3 +38,23 @@ After this, the helm chart can be installed from the root directory using:
 helm install RELEASE_NAME ./spyderbat-eval
 ```
 
+With the Helm install completed, you can get access to the documentation using a kubectl forwarding rule:
+
+```sh
+POD_NAME=$(kubectl get pods -o json | jq -r '.items[].metadata.name' | grep guidebook)
+kubectl port-forward $POD_NAME --address 0.0.0.0 8000:3000
+```
+
+## Adding a Scenario
+
+1. Start mdBook in the `guidebook` directory (`mdbook serve --open` or use `make serve`)
+2. Add an entry in [the SUMMARY file](./guidebook/src/SUMMARY.md) for your new scenario, and save the file. mdBook will automatically create a new file for you
+3. Fill out the scenario entry. The page will be updated live by mdBook every time you save.
+4. Add any new modules to the `modules` directory, if necessary. **Make sure to add the label `managed-by: spyderbat-eval` to all resources to ensure they are detected when updating.**
+5. Update `./access.sh` with any new port-forward commands needed to access resources for the scenario.
+
+### Publishing the Updates
+
+1. Update the guidebook image by running `make update-image` in the `guidebook` directory
+2. Re-run the `./install-or-update.sh` script with any clusters that need updating
+
