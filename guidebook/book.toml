@@ -4,5 +4,7 @@ language = "en"
 multilingual = false
 src = "src"
 title = "Spyderbat Samples Guidebook"
+
+[output.html]
 default-theme = "navy"
 
