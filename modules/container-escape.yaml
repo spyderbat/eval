@@ -14,7 +14,6 @@ metadata:
 type: Opaque
 data:
   k8sgoatvaultkey: azhzLWdvYXQtY2QyZGEyNzIyNDU5MWRhMmI0OGVmODM4MjZhOGE2YzM=
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -34,7 +33,6 @@ spec:
     spec:
       hostPID: true
       hostIPC: true
-      #hostNetwork: true
       volumes:
       - name: host-filesystem
         hostPath:
