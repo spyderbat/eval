@@ -9,7 +9,3 @@
 - [Scenario: Container escape using chroot](./container_escape_chroot/README.md)
 - [Scenario: Crypto miner on pods (todo)](./cryptominer/README.md)
 - [Scenario: End to end cluster attack (todo)](./end_to_end/README.md)
-
-- [Kubernetes Goat](./kubernetes_goat/README.md)
-    - [Container Escape to the Host System](./kubernetes_goat/container_escape.md)
-- [Atomic Red Team]()

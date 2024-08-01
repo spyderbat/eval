@@ -19,7 +19,7 @@ cat << EOF
 Installing into the context: $CONTEXT
 EOF
 
-kubectl apply -R -f modules
+kubectl apply -R -f modules --prune -l managed-by=spyderbat-eval
 # restart the deployments to restart the pods
 kubectl rollout restart deployment --selector=managed-by=spyderbat-eval
 kubectl rollout restart deployment --namespace guidebook --selector=managed-by=spyderbat-eval
