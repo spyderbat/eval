@@ -68,7 +68,7 @@ spec:
   selector:
     matchLabels:
       name: rsvp-app
-  replicas: 3
+  replicas: 2
   template:
     metadata:
       labels:
