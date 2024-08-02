@@ -1,0 +1,195 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lateral-movement
+  labels:
+    managed-by: spyderbat-eval
+---
+# an extra configmap to inject a fake bash history
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fake-bob-history
+  namespace: lateral-movement
+  labels:
+    managed-by: spyderbat-eval
+data:
+  .bash_history: |
+    ls
+    which ssh
+    nslookup payroll-calculator
+    curl payroll-calculator
+    ssh admin@payroll-calculator -i ~/bob_key -p 2222
+  # NOTE: this key was generated specifically for this demo, it is not valid elsewhere
+  bob_key: "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACD2cAMuyRsEJ/nCz6cTF4yy/V1wG/d6w8c2djl0zrGiZAAAAJAmzd9BJs3f\nQyNTUxOQAAACD2cAMuyRsEJ/nCz6cTF4yy/V1wG/d6w8c2djl0zrGiZAAAAJAmzd9BJs3f\nQQAAAAtzc2gtZWQyNTUxOQAAACD2cAMuyRsEJ/nCz6cTF4yy/V1wG/d6w8c2djl0zrGiZA\nAAAEBxRdFj6EqK8t65INHYeJAn8ZoH3hxzVSsI2aNQW+qFefZwAy7JGwQn+cLPpxMXjLL9\nXXAb93rDxzZ2OXTOsaJkAAAADWtpcmFuQGFyY2hib3g=\n-----END OPENSSH PRIVATE KEY-----" # trufflehog:ignore
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bobdev
+  namespace: lateral-movement
+  labels:
+    managed-by: spyderbat-eval
+spec:
+  containers:
+  - name: bobdev-container
+    image: public.ecr.aws/a6j2k0g1/devops-container
+    volumeMounts:
+    - name: fake-bob-history
+      mountPath: /root
+    command:
+      - sh
+      - -c
+      - chmod 600 ~/bob_key; sleep infinity
+  volumes:
+    - name: fake-bob-history
+      configMap:
+        name: fake-bob-history
+        defaultMode: 0600
+        items:
+          - key: .bash_history
+            path: .bash_history
+          - key: bob_key
+            path: bob_key
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payrolldb
+  namespace: lateral-movement
+  labels:
+    app: payroll
+    tier: backend
+    env: prod
+    managed-by: spyderbat-eval
+spec:
+  selector:
+    matchLabels:
+      name: payrolldb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: payrolldb
+        app: payroll
+        tier: backend
+        env: prod
+    spec:
+      containers:
+      - name: payrolldb
+        image: mongo:latest
+        env:
+        - name: MONGODB_DATABASE
+          value: testdata
+        ports:
+        - containerPort: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payrolldb
+  namespace: lateral-movement
+  labels:
+    app: payroll
+    tier: backend
+    env: prod
+    managed-by: spyderbat-eval
+spec:
+  ports:
+  - port: 27017
+    protocol: TCP
+  selector:
+    name: payrolldb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payroll-calculator
+  namespace: lateral-movement
+  labels:
+    app: payroll
+    tier: frontend
+    env: prod
+    managed-by: spyderbat-eval
+spec:
+  selector:
+    matchLabels:
+      name: payroll-calculator
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: payroll-calculator
+        app: payroll
+        tier: frontend
+        env: prod
+        managed-by: spyderbat-eval
+    spec:
+      containers:
+      - name: payroll-calculator
+        image: public.ecr.aws/a6j2k0g1/payroll-calculator:latest
+        imagePullPolicy: Always
+        env:
+        - name: MONGODB_HOST
+          value: payrolldb
+        - name: LINK
+          value: www.spyderbat.com
+        - name: COMPANY
+          value: Spyderbat
+        - name: TEXT1
+          value: "Spyderbat  "
+        - name: TEXT2
+          value: "  Payroll demo app (prod)"
+        - name: LOGO
+          value: "https://s7.orientaltrading.com/is/image/OrientalTrading/PDP_VIEWER_THUMB$NOWA$/patterned-bat-magnet-craft-kit-makes-12~13778147"
+        - name: DELAY
+          value: "120"
+        ports:
+        - containerPort: 5000
+          name: web-port
+        startupProbe:
+          tcpSocket:
+            port: 5000
+          failureThreshold: 30
+          periodSeconds: 10
+      - name: tmp-ssh-dev
+        image: lscr.io/linuxserver/openssh-server:latest
+        ports:
+        - containerPort: 2222
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "America/Chicago"
+        - name: USER_NAME
+          value: "admin"
+        - name: PUBLIC_KEY
+          value: |
+            ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPZwAy7JGwQn+cLPpxMXjLL9XXAb93rDxzZ2OXTOsaJk bob@example.com
+        - name: SUDO_ACCESS
+          value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payroll-calculator
+  namespace: lateral-movement
+  labels:
+    app: payroll
+    tier: frontend
+    env: prod
+    managed-by: spyderbat-eval
+spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+    protocol: TCP
+    name: http
+  - port: 2222
+    targetPort: 2222
+    protocol: TCP
+    name: tmp-ssh-port
+  selector:
+    name: payroll-calculator
