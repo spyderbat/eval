@@ -73,7 +73,7 @@ of the image.
 
 Let's simulate that action by updating the web deployment to use a more recent version of the image.
 
-Find the file app-policy.yaml under the modules directory of the eval repo, and open it up in your editor of choice.
+Find the file supply-chain.yaml under the modules directory of the eval repo, and open it up in your editor of choice.
 
 Look for the deployment definition with name 'rsvp-app', and find the spec section. In the container properties, update the image from
 `guyduchatelet/spyderbat-demo:1` to `guyduchatelet/spyderbat-demo:2`
@@ -81,9 +81,9 @@ Look for the deployment definition with name 'rsvp-app', and find the spec secti
 After saving, now let's apply this change to the cluster:
 
 ```sh
-kubectl apply -f app-policy.yaml
+kubectl apply -f supply-chain.yaml
 
-namespace/app-policy unchanged
+namespace/supply-chain unchanged
 deployment.apps/mongodb unchanged
 service/mongodb unchanged
 deployment.apps/rsvp-app configured
@@ -95,13 +95,13 @@ We can see that the rsvp-app deployment is getting updated. The existing pods wi
 
 Give it a few minutes for these changes to take effect, and then we can go back to the Spyderbat UI to evaluate the change in behavior
 
-Go back to the Kubernetes view in the UI, pick your cluster, update your start-time selection to 'Now', for the most recent view on your cluster, select the workload view. Then locate again the app-policy namespace, and the rsvp-app and its containers.
+Go back to the Kubernetes view in the UI, pick your cluster, update your start-time selection to 'Now', for the most recent view on your cluster, select the workload view. Then locate again the supply-chain namespace, and the rsvp-app and its containers.
 
 Depending on your timing, you might see both the older deployment (with the previous image) and the newer deployment side to side in this view, like here:
 
 ![container process view](./supply_chain_6.png)
 
-On the left, we see the old deployment, on the right the new deployment came in. Already in this view, there is an indication things have changed - we see several redflags that have been raised on the new containers. These flags can be inspected for more detail. 
+On the left, we see the old deployment, on the right the new deployment came in. Already in this view, there is an indication things have changed - we see several redflags that have been raised on the new containers. These flags can be inspected for more detail.
 
 Let's pivot again into the full process view inside the container. Pick a container and inspect it again as before to look at the processes running inside. Here's what we see:
 
