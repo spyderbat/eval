@@ -2,10 +2,11 @@
 
 [Introduction](README.md)
 
-- [Scenario: Lateral Movement (todo)](./lateral/README.md)
-- [Scenario: Supply-chain attack and application policies (todo)](./app_policy/README.md)
-- [Scenario: Rogue image and cluster policies (todo)](./rogue_image/README.md)
-- [Scenario: Container escape using cgroups (todo)](./container_escape_cgroup/README.md)
-- [Scenario: Container escape using chroot](./container_escape_chroot/README.md)
-- [Scenario: Crypto miner on pods (todo)](./cryptominer/README.md)
-- [Scenario: End to end cluster attack (todo)](./end_to_end/README.md)
+- [Lateral Movement (todo)](./lateral/README.md)
+- [Supply-chain attack](./app_policy/README.md)
+- [Supply-chain attack with image policy (todo)](./app_policy/README.md)
+- [Rogue image and cluster policies (todo)](./rogue_image/README.md)
+- [Container escape using cgroups (todo)](./container_escape_cgroup/README.md)
+- [Container escape using chroot](./container_escape_chroot/README.md)
+- [Crypto miner on pods (todo)](./cryptominer/README.md)
+- [End to end cluster attack (todo)](./end_to_end/README.md)
