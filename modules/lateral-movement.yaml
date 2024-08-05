@@ -21,7 +21,14 @@ data:
     curl payroll-calculator
     ssh admin@payroll-calculator -i ~/bob_key -p 2222
   # NOTE: this key was generated specifically for this demo, it is not valid elsewhere
-  bob_key: "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACD2cAMuyRsEJ/nCz6cTF4yy/V1wG/d6w8c2djl0zrGiZAAAAJAmzd9BJs3f\nQyNTUxOQAAACD2cAMuyRsEJ/nCz6cTF4yy/V1wG/d6w8c2djl0zrGiZAAAAJAmzd9BJs3f\nQQAAAAtzc2gtZWQyNTUxOQAAACD2cAMuyRsEJ/nCz6cTF4yy/V1wG/d6w8c2djl0zrGiZA\nAAAEBxRdFj6EqK8t65INHYeJAn8ZoH3hxzVSsI2aNQW+qFefZwAy7JGwQn+cLPpxMXjLL9\nXXAb93rDxzZ2OXTOsaJkAAAADWtpcmFuQGFyY2hib3g=\n-----END OPENSSH PRIVATE KEY-----" # trufflehog:ignore
+  bob_key: "\
+    -----BEGIN OPENSSH PRIVATE KEY-----\n\
+    b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\n\
+    QyNTUxOQAAACD2cAMuyRsEJ/nCz6cTF4yy/V1wG/d6w8c2djl0zrGiZAAAAJAmzd9BJs3f\n\
+    QQAAAAtzc2gtZWQyNTUxOQAAACD2cAMuyRsEJ/nCz6cTF4yy/V1wG/d6w8c2djl0zrGiZA\n\
+    AAAEBxRdFj6EqK8t65INHYeJAn8ZoH3hxzVSsI2aNQW+qFefZwAy7JGwQn+cLPpxMXjLL9\n\
+    XXAb93rDxzZ2OXTOsaJkAAAADWtpcmFuQGFyY2hib3g=\n\
+    -----END OPENSSH PRIVATE KEY-----\n" # trufflehog:ignore
 ---
 apiVersion: v1
 kind: Pod
