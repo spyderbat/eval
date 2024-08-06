@@ -166,7 +166,7 @@ From here, we can drill down into the container by right-clicking it on the grap
 
 ![The process view](./process_view.png)
 
-The `apt` command generated quite a few child processes; to clean these up we can right-click the `dpkg` parent process and remove its descendants from the trace. On the other hand, if we want to see more of the related processes, we can right click the root `bash` process and select the objects we want to add.
+The `apt` command generated quite a few child processes (you may see a slightly different set of processes); to clean these up we can right-click the parent process and remove its descendants from the trace. On the other hand, if we want to see more of the related processes, we can right click the root `bash` process and select the objects we want to add.
 
 ## Next Steps
 
