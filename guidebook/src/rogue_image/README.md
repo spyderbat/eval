@@ -31,9 +31,9 @@ Next, create a new cluster policy. This command generates a definition for a new
 spyctl create cluster-policy -C spyderbateval --namespace -n demo-cluster-policy > cluster-policy.yaml
 ```
 
-By default, Cluster Policies have a single response action makeRedFlag this action generates a redflag that references a deviant object. Redflags are used to populate security dashboards within the Spyderbat Console, but may also be forwarded to a SIEM and/or used to trigger notifications.
+By default, Cluster Policies have a single response action: `makeRedFlag`. This action generates a redflag that references a deviant object. Redflags are used to populate security dashboards within the Spyderbat Console, but may also be forwarded to a SIEM and/or used to trigger notifications.
 
-In this case, however, we want to take advantage of a different feature: "Interceptor" response actions. A cluster policy rule can be configured to trigger the `agentKillPod` response action, which will kill the pod of any violating container in the matching namespace. To do this, edit the generated yaml as follows:
+In this case, however, we want to take advantage of a different feature: "Interceptor" response actions. A cluster policy rule can be configured to trigger the `agentKillPod` response action, which will kill the pod of any violating container in the matching namespace. In this case, we want to add extra protections to the `supply-chain` namespace, as if we have some important services there. To do this, edit the generated yaml as follows:
 
 ```yaml
 # ...
@@ -75,7 +75,7 @@ To confirm that your policy applied successfully you can run the following comma
 spyctl get policies --type cluster
 ```
 
-And to view your cluster-rulesets you can run the command:
+And to view your cluster-rulesets you can run this command:
 ```sh
 spyctl get rulesets --type cluster
 ```
@@ -89,15 +89,15 @@ spyctl logs --follow policy demo-cluster-policy
 In another terminal, trigger a log by creating a new pod that is not in the allowlist:
 
 ```sh
-kubectl run --namespace supply-chain test-pod --image hello-world --rm -i --restart='Never'
+kubectl run --namespace supply-chain test-pod --image busybox --rm -i --restart='Never' -- sh
 ```
 
-You should soon see new logs printed by the `logs` command:
+You should soon see new logs printed by the `spyctl logs` command:
 
 ```
-(audit mode): Container image "hello-world:latest" ns:"supply-chain" cluster:"minikube" deviated from policy "demo-cluster-policy".
-(audit mode): Would have initiated "makeRedFlag" action for "cont:xxxxxxxxxxx:XXXXXXXXXXX:999999999999". Not initiated due to "audit" mode.
+(audit mode): Container image "docker.io/library/busybox:latest" ns:"supply-chain" cluster:"spyderbateval" deviated from policy "demo-cluster-policy".
 (audit mode): Would have initiated "agentKillPod" action for "test-pod" pod. Not initiated due to "audit" mode.
+(audit mode): Would have initiated "makeRedFlag" action for "cont:xxxxxxxxxxx:yyyyyyyyyyy:zzzzzzzzzzzz". Not initiated due to "audit" mode.
 ```
 
 Now, we can edit the policy to enable enforcement:
@@ -118,7 +118,7 @@ metadata:
 spec:
   clusterSelector:
     matchFields:
-      name: minikube
+      name: spyderbateval
   enabled: true
   mode: enforce # <--- change this from audit to enforce
   response:
@@ -131,7 +131,7 @@ spec:
     - makeRedFlag:
         severity: high
   rulesets:
-  - minikube_ruleset
+  - spyderbateval_ruleset
 ```
 
 ## Running the Exploit
@@ -143,7 +143,7 @@ Instead, an attacker with create access could spin up a new pod with a container
 ```sh
 # run the kalilinux image, attaching to it when it is ready
 # here we are using the supply-chain namespace just for the purposes of the demo
-kubectl run --namespace supply-chain jumpserver --image kalilinux/kali-rolling --rm -i --restart='Never'
+kubectl run --namespace supply-chain jumpserver --image kalilinux/kali-rolling -i
 ```
 
 Once that attaches, we need to install the kali tools with:
@@ -152,7 +152,15 @@ Once that attaches, we need to install the kali tools with:
 apt update && apt -y install kali-linux-headless
 ```
 
-However, this command never gets a chance to finish, as the pod is detected within a few minutes and killed by the new policy.
+However, this command never gets a chance to finish, as the pod is quickly detected and killed by the new policy. Checking the list of pods reveals that it is no longer present in that namespace:
+
+```
+$ kubectl get pods -n supply-chain
+NAME                        READY   STATUS    RESTARTS        AGE
+mongodb-845cc87dcc-9wj6n    1/1     Running   0               5d23h
+rsvp-app-586dc76544-bbtqw   1/1     Running   0               5d23h
+rsvp-app-586dc76544-pndzc   1/1     Running   1 (5d19h ago)   5d23h
+```
 
 ## Investigation
 
@@ -160,17 +168,19 @@ Just because the pod was killed doesn't mean there isn't any record of it. The c
 
 To begin the investigation, navigate to the Dashboard page in the Spyderbat. In the Policy tab, under "Container Policy Deviation Flags", there should be a new entry in the `demo-cluster-policy` group. Select the flag in this group, and select "Start Kubernetes Investigation" at the bottom of the page. This will open the Kubernetes view in a new tab, displaying all pods and containers in the `supply-chain` namespace. Here, we can see that a new pod appeared that is not in any namespace, and made a large number of connections to Kali linu package repositories. In the details view, we can also see the image used: `kalilinux/kali-rolling:latest`.
 
-![The Kubernetes View](./kubernetes_view.png)
+If the flagged pod does not immediately show up, try adjusting the time bar at the top of the graph view further back; this will show and hide pods that existed during those times as they were created and deleted. You may even notice our test pod popping up in the history.
+
+![The Kubernetes View](./kubernetes_view_back_in_time.png)
 
 From here, we can drill down into the container by right-clicking it on the graph and selecting "Investigate Container". This will open a process-level causal tree, allowing us to see exactly what was executed inside the jumpserver pod.
 
-![The process view](./process_view.png)
+![The process view](./kali_process_view.png)
 
-The `apt` command generated quite a few child processes (you may see a slightly different set of processes); to clean these up we can right-click the parent process and remove its descendants from the trace. On the other hand, if we want to see more of the related processes, we can right click the root `bash` process and select the objects we want to add.
+The `apt` command generated quite a few child processes (you may see a slightly different set of processes); to clean these up we can right-click the parent of any irrelevant process and remove its descendants from the trace. On the other hand, if we want to see more of the related processes, we can right click and select the objects we want to add.
 
 ## Next Steps
 
-Now that we have determined the scope of the attackers actions, it is clear that only the package install command was run, and no other resources were accessed. Since the pod was already deleted, the only steps we need to take are determining how the `kubectl run` access was obtained in the first place.
+Now that we have determined the scope of the attackers actions, it is clear that only the package install command was run, and no other resources were accessed. Since the pod was already deleted, the only remaining steps we need to take are determining how the `kubectl run` access was obtained in the first place.
 
 ## Clean-up
 
@@ -181,8 +191,8 @@ spyctl get policies --type cluster
 ```
 
 ```
-UID                       NAME                 STATUS    TYPE       VERSION  CREATE_TIME
-pol:xxxxxxxxxxxxxxxxxxxx  demo-cluster-policy  Auditing  cluster          1  2024-07-31T14:36:30Z
+UID                       NAME                 STATUS     TYPE       VERSION  CREATE_TIME
+pol:xxxxxxxxxxxxxxxxxxxx  demo-cluster-policy  Enforcing  cluster          1  2024-07-31T14:36:30Z
 ```
 
 ```sh
