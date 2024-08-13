@@ -31,4 +31,5 @@ kubectl apply -R -f modules --prune -l managed-by=spyderbat-eval
 kubectl rollout restart deployment --selector=managed-by=spyderbat-eval
 kubectl rollout restart deployment --namespace guidebook --selector=managed-by=spyderbat-eval
 kubectl rollout restart deployment --namespace supply-chain --selector=managed-by=spyderbat-eval
+kubectl rollout restart deployment --namespace lateral-movement --selector=managed-by=spyderbat-eval
 
