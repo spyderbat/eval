@@ -52,9 +52,10 @@ kubectl port-forward $POD_NAME --address 0.0.0.0 8000:3000
 3. Fill out the scenario entry. The page will be updated live by mdBook every time you save.
 4. Add any new modules to the `modules` directory, if necessary. **Make sure to add the label `managed-by: spyderbat-eval` to all resources to ensure they are detected when updating.**
 5. Update `./access.sh` with any new port-forward commands needed to access resources for the scenario.
+6. Update `./install.sh` and `./update.sh` with any new commands needed to create or update resources.
 
 ### Publishing the Updates
 
 1. Update the guidebook image by running `make update-image` in the `guidebook` directory
-2. Re-run the `./install-or-update.sh` script with any clusters that need updating
+2. Run the `./update.sh` script with any clusters that need updating
 
