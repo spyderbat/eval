@@ -1,7 +1,7 @@
 #!/bin/sh
 
 helm list -n falco | grep falco > /dev/null
-if $?; then
+if [ $? ]; then
   echo "Falco detected; running Falco update..."
 
   if [ ! -x "$(command -v jq)" ]; then
@@ -13,7 +13,7 @@ if $?; then
   SPYCTL_SECRET=$(spyctl config view -o json | jq -r '.contexts | select(.[].name="'$(spyctl config current-context)'") | .[0].secret')
   SPYDERBAT_API_KEY=$(spyctl config get-apisecrets "$SPYCTL_SECRET" -o json | jq -r .stringData.apikey)
 
-  helm update falco falcosecurity/falco \
+  helm upgrade falco falcosecurity/falco \
     --create-namespace \
     --namespace falco \
     --set falcosidekick.enabled=true \

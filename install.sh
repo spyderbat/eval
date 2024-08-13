@@ -21,10 +21,10 @@ EOF
 echo -n "Would you like to install the Falco integration? [Y/n]: "
 read USE_FALCO
 
-if [ ! ( ${USE_FALCO:0:1} == "n" || ${USE_FALCO:0:1} == "N" ) ]; then
-  if [ ${USE_FALCO:0:1} == "y" || ${USE_FALCO:0:1} == "Y" || ${USE_FALCO:0:1} == "" ]; then
+if [ ! '(' "${USE_FALCO:0:1}" == "n" -o "${USE_FALCO:0:1}" == "N" ')' ]; then
+  if [ "${USE_FALCO:0:1}" == "y" -o "${USE_FALCO:0:1}" == "Y" -o "${USE_FALCO:0:1}" == "" ]; then
 
-    if [ -x "$(command -v jq)" && -x "$(command -v spyctl)" ]; then
+    if [ -x "$(command -v jq)" -a -x "$(command -v spyctl)" ]; then
       SPYCTL_CONTEXT=$(spyctl config current-context)
 
       if [ $? -ne 0 ]; then
@@ -43,7 +43,7 @@ if [ ! ( ${USE_FALCO:0:1} == "n" || ${USE_FALCO:0:1} == "N" ) ]; then
       read SPYDERBAT_API_KEY
     fi
 
-    helm update falco falcosecurity/falco \
+    helm install falco falcosecurity/falco \
       --create-namespace \
       --namespace falco \
       --set falcosidekick.enabled=true \
