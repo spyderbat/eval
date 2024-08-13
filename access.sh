@@ -16,6 +16,7 @@ fi
 export POD_NAME=$(kubectl get pods -l "app=system-monitor" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward $POD_NAME --address 0.0.0.0 1233:8080 > /dev/null 2>&1 &
 
+# Cryptominer Scenario
 export POD_NAME=$(kubectl get pods --namespace cryptominer -l "app=jupyter-notebook" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward --namespace cryptominer $POD_NAME --address 0.0.0.0 1234:8888 > /dev/null 2>&1 &
 
