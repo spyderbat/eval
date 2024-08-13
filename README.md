@@ -8,7 +8,7 @@ A set of tools for evaluating and showcasing the features offered by Spyderbat.
 
 First, make sure you have `kubectl` installed, and a configuration pointing to the cluster you want to install on. Then, clone this repository.
 
-To install the required resources, run the `install-or-update.sh` script provided at the root of the repository. Now would also be a good time to [install Spyderbat on the cluster](https://docs.spyderbat.com/installation/spyderbat-nano-agent/kubernetes), if you haven't already.
+To install the required resources, run the `install.sh` script provided at the root of the repository. Now would also be a good time to [install Spyderbat on the cluster](https://docs.spyderbat.com/installation/spyderbat-nano-agent/kubernetes), if you haven't already.
 
 ### Accessing
 
