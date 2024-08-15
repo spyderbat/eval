@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ ! -x "$(command -v kubectl)" ]; then
   echo "Kubectl not installed. Visit https://kubernetes.io/docs/tasks/tools/ to install it."
@@ -21,10 +21,10 @@ EOF
 echo -n "Would you like to install the Falco integration? [Y/n]: "
 read USE_FALCO
 
-if [ ! '(' "${USE_FALCO:0:1}" == "n" -o "${USE_FALCO:0:1}" == "N" ')' ]; then
-  if [ "${USE_FALCO:0:1}" == "y" -o "${USE_FALCO:0:1}" == "Y" -o "${USE_FALCO:0:1}" == "" ]; then
+if [[ ! ( "${USE_FALCO:0:1}" == "n" || "${USE_FALCO:0:1}" == "N" ) ]]; then
+  if [[ "${USE_FALCO:0:1}" == "y" || "${USE_FALCO:0:1}" == "Y" || "${USE_FALCO:0:1}" == "" ]]; then
 
-    if [ -x "$(command -v jq)" -a -x "$(command -v spyctl)" ]; then
+    if [[ -x "$(command -v jq)" && -x "$(command -v spyctl)" ]]; then
       SPYCTL_CONTEXT=$(spyctl config current-context)
 
       if [ $? -ne 0 ]; then
@@ -33,6 +33,12 @@ if [ ! '(' "${USE_FALCO:0:1}" == "n" -o "${USE_FALCO:0:1}" == "N" ')' ]; then
       fi
 
       echo "Installing into the spyctl context: $SPYCTL_CONTEXT"
+      echo -n "Is this right? [Y/n]: "
+      read OK
+      if [[ ! ( "${OK:0:1}" == "y" || "${OK:0:1}" == "Y" || "${OK:0:1}" == "" ) ]]; then
+        echo "Cancelling..."
+        exit 1
+      fi
       SPYDERBAT_ORG=$(spyctl config view -o json | jq -r '.contexts | select(.[].name="'$(spyctl config current-context)'") | .[0].context.organization')
       SPYCTL_SECRET=$(spyctl config view -o json | jq -r '.contexts | select(.[].name="'$(spyctl config current-context)'") | .[0].secret')
       SPYDERBAT_API_KEY=$(spyctl config get-apisecrets "$SPYCTL_SECRET" -o json | jq -r .stringData.apikey)
@@ -50,7 +56,8 @@ if [ ! '(' "${USE_FALCO:0:1}" == "n" -o "${USE_FALCO:0:1}" == "N" ')' ]; then
       --set falcosidekick.config.spyderbat.orguid="$SPYDERBAT_ORG" \
       --set falcosidekick.config.spyderbat.apiurl="${SPYDERBAT_API_URL:-https://api.spyderbat.com}" \
       --set falcosidekick.config.spyderbat.apikey="$SPYDERBAT_API_KEY" \
-      --set extra.args=\{"-p","%proc.pid"\}
+      --set extra.args=\{"-p","%proc.pid"\} \
+      --set driver.kind=modern_ebpf
 
   else
     echo "Input not recognized; please enter y or n!"
