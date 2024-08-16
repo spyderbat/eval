@@ -27,6 +27,7 @@ else
 fi
 
 echo "Running kubectl; if this breaks, try deleting the trouble resources and re-running..."
+kubectl delete pod -n build bobdev
 kubectl apply -R -f modules --prune -l managed-by=spyderbat-eval
 # restart the deployments to re-pull the image
 kubectl rollout restart deployment --selector=managed-by=spyderbat-eval
@@ -34,4 +35,5 @@ kubectl rollout restart deployment --namespace guidebook --selector=managed-by=s
 kubectl rollout restart deployment --namespace supply-chain --selector=managed-by=spyderbat-eval
 kubectl rollout restart deployment --namespace lateral-movement --selector=managed-by=spyderbat-eval
 kubectl rollout restart deployment --namespace cryptominer --selector=managed-by=spyderbat-eval
+kubectl rollout restart deployment --namespace payroll-prod --selector=managed-by=spyderbat-eval
 

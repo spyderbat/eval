@@ -1,0 +1,259 @@
+# prod deployment:
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: payroll-prod
+  labels:
+    env: prod
+    managed-by: spyderbat-eval
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-setup
+  namespace: payroll-prod
+  labels:
+    managed-by: spyderbat-eval
+data:
+  setup.js: |
+    db.createUser({user: "payroll-calc", pwd: "secure-password", roles: ["dbOwner"]})
+    db.createCollection('payrolldata', {capped: false})
+    db.payrolldata.insert([
+      {
+        item: 'Bob',
+        qty: 2500,
+        tags: ['hourly'],
+        date: 'Tue Jul 04 02:16:28 PM CDT 2024'
+      },
+      {
+        item: 'Joe',
+        qty: 4500,
+        tags: ['salary'],
+        date: 'Tue Jul 05 02:17:48 PM CDT 2024'
+      },
+      {
+        item: 'Sally',
+        qty: 4000,
+        tags: ['salary'],
+        date: 'Tue Jul 05 02:26:36 PM CDT 2024'
+      }
+    ]);
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payrolldb
+  namespace: payroll-prod
+  labels:
+    app: payroll
+    tier: backend
+    env: prod
+    managed-by: spyderbat-eval
+spec:
+  selector:
+    matchLabels:
+      name: payrolldb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: payrolldb
+        app: payroll
+        tier: backend
+        env: prod
+    spec:
+      containers:
+      - name: payrolldb
+        image: mongo:latest
+        env:
+        - name: MONGODB_DATABASE
+          value: payrolldb
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: mongo-setup
+          mountPath: /docker-entrypoint-initdb.d/
+      volumes:
+        - name: mongo-setup
+          configMap:
+            name: mongo-setup
+            items:
+              - key: setup.js
+                path: setup.js
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payrolldb
+  namespace: payroll-prod
+  labels:
+    app: payroll
+    tier: backend
+    env: prod
+    managed-by: spyderbat-eval
+spec:
+  ports:
+  - port: 27017
+    protocol: TCP
+  selector:
+    name: payrolldb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payroll-calculator
+  namespace: payroll-prod
+  labels:
+    app: payroll
+    tier: frontend
+    env: prod
+    managed-by: spyderbat-eval
+spec:
+  selector:
+    matchLabels:
+      name: payroll-calculator
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: payroll-calculator
+        app: payroll
+        tier: frontend
+        env: prod
+    spec:
+      containers:
+      - name: payroll-calculator
+        image: public.ecr.aws/a6j2k0g1/payroll-calculator:latest
+        imagePullPolicy: Always
+        env:
+        - name: MONGODB_HOST
+          value: payrolldb
+        - name: LINK
+          value: www.spyderbat.com
+        - name: COMPANY
+          value: Spyderbat
+        - name: TEXT1
+          value: "Spyderbat  "
+        - name: TEXT2
+          value: "  Payroll demo app (prod)"
+        - name: LOGO
+          value: "https://s7.orientaltrading.com/is/image/OrientalTrading/PDP_VIEWER_THUMB$NOWA$/patterned-bat-magnet-craft-kit-makes-12~13778147"
+        - name: DELAY
+          value: "120"
+        ports:
+        - containerPort: 5000
+          name: web-port
+        startupProbe:
+          tcpSocket:
+            port: 5000
+          failureThreshold: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payroll-calculator
+  namespace: payroll-prod
+  labels:
+    app: payroll
+    tier: frontend
+    env: prod
+    managed-by: spyderbat-eval
+spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+    protocol: TCP
+  selector:
+    name: payroll-calculator
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: build
+  labels:
+    env: devops
+    managed-by: spyderbat-eval
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bobdev
+  namespace: build
+  labels:
+    managed-by: spyderbat-eval
+spec:
+  serviceAccountName: build-sa
+  containers:
+  - name: bobdev-container
+    image: public.ecr.aws/a6j2k0g1/devops-container
+    volumeMounts:
+    - name: fake-bob-history
+      mountPath: /root
+  volumes:
+    - name: fake-bob-history
+      configMap:
+        name: fake-bob-history
+        items:
+          - key: .bash_history
+            path: .bash_history
+---
+# an extra configmap to inject a fake bash history
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fake-bob-history
+  namespace: build
+  labels:
+    managed-by: spyderbat-eval
+data:
+  .bash_history: |
+    ls
+    kubectl config view
+    kubectl get pods -A
+    kubectl get pods -n falco
+    kubectl describe pods -n falco
+    kubectl exec falco-falcosidekick-6f7996c855-vrmrt -- hostname
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: build-sa
+  namespace: build
+  labels:
+    managed-by: spyderbat-eval
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: role:dev
+  namespace: falco
+  labels:
+    managed-by: spyderbat-eval
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - pods
+      - pods/exec
+    verbs:
+      - create
+      - get
+      - list
+      - exec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: build-dev-rb
+  namespace: falco
+  labels:
+    managed-by: spyderbat-eval
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: role:dev
+subjects:
+  - kind: ServiceAccount
+    name: build-sa
+    namespace: build
