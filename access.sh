@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ ! -x "$(command -v kubectl)" ]; then
   echo "Kubectl not installed. Visit https://kubernetes.io/docs/tasks/tools/ to install it."

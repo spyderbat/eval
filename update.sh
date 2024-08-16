@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 helm list -n falco | grep falco > /dev/null
 if [ $? ]; then
@@ -20,7 +20,8 @@ if [ $? ]; then
     --set falcosidekick.config.spyderbat.orguid="$SPYDERBAT_ORG" \
     --set falcosidekick.config.spyderbat.apiurl="${SPYDERBAT_API_URL:-https://api.spyderbat.com}" \
     --set falcosidekick.config.spyderbat.apikey="$SPYDERBAT_API_KEY" \
-    --set extra.args=\{"-p","%proc.pid"\}
+    --set extra.args=\{"-p","%proc.pid"\} \
+    --set driver.kind=modern_ebpf
 else
   echo "Falco not detected; skipping Falco update..."
 fi
