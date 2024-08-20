@@ -4,7 +4,8 @@
 
 - [Cloud Detection and Response](./cdr.md)
     - [Container Escape Using Chroot](./container_escape_chroot/README.md)
-    - [Lateral Movement]()
+    - [Multi-Machine Lateral Movement](./lateral/outside.md)
+    - [Lateral Movement Within the Cluster](./lateral/within.md)
     - [Supply-Chain Attack](./supply_chain/README.md)
     - [End-to-End Cluster Attack](./end_to_end/README.md)
 - [Policy Violation Tracking](./policy.md)

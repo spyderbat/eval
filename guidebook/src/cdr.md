@@ -3,7 +3,8 @@
 ## Core Demo - Tracking Lateral Movement and Privilege Escalation
 
 - [Container Escape Using Chroot](./container_escape_chroot/)
-- Lateral Movement (In Progress)
+- [Multi-Machine Lateral Movement](./lateral/outside.md)
+- [Lateral Movement Within the Cluster](./lateral/within.md)
 
 ## Core Demo - Detecting Malicious Commands
 
