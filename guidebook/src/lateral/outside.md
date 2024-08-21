@@ -93,7 +93,7 @@ cat payroll-app/Makefile
 
 And, given the access on this machine, we could edit the `payroll-app` package to add a backdoor that we could access, and then push a new version of the package.
 
-As an example, let's could install netcat:
+As an example, let's install netcat for setting up a reverse shell:
 
 ```sh
 sudo yum install nmap-ncat
@@ -123,7 +123,26 @@ To see a full supply-chain exploitation and how Spyderbat detects it, visit the 
 
 ## Investigation
 
-[[TODO]]
+
+In the Spyderbat Console, navigate to the Dashboard page to begin our investigation. In the Security tab, under "Recent Spydertraces with Score > 50", a new trace should appear, likely named "interactive_ssh_from_[IP_ADDRESS]", or "suspicious_crud_command_cat". Select these Spydertraces, and select "Start Process Investigation" to see the events of the exploit layed out in a Causal Tree in the investigation view:
+
+![An example of the resulting graph](./lateral_movement_external_graph.png)
+
+Your view should looks similar to the trace above. If it does not, make sure you selected a Spydertrace object from both machines. If you are still missing details, click the "Add Next X Objects" button on some of the traces listed in the records table next to the graph:
+
+![A view of the records table, showing the Add Next 18 Object button](./recordslist_example.png)
+
+From this graph, we can easily see that the attacker is installing unexpected packages and running suspicious commands like `nc`. We can also see that the attacker's access came from the machine on the right, which we know is the jumpserver. If we select the `vim` process, we can also see that the Payroll app was modified by the command arguments in the details pane:
+
+![The details pane, showing the command with the filename](./vim_details.png)
+
+## Next Steps
+
+Now that we know the attacker's method of access and persistence method, we can take steps to remediate:
+
+- rotate both machines' SSH keys
+- remove the backdoor from the payroll-prod system.
+- remove netcat from the build system
 
 ## Further Reading
 
