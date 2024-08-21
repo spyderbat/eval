@@ -74,7 +74,7 @@ cat data/db/collection-0--*.wt | nc PUBLIC_IP 7777
 # wait a few seconds, then kill the command with Ctrl-C
 ```
 
-On the public server, you should now have the collection-0 file.
+On the public server, you should now have the collection-0 file in `download`.
 
 ## Investigation
 

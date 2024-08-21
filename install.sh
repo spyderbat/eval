@@ -60,10 +60,10 @@ fi
 
 cat << EOF
 
-To continue, you will need two public-facing machines, and the ssh keys
-to access them as the root user. The install script will copy the files
-necessary to run the lateral movement demo into them, including a new
-ssh key, modifying the hosts file, and some files in the /root directory.
+To continue, you will need two public-facing machines with Spyderbat installed,
+and the ssh keys to access them as the given user. The install script will copy
+the files necessary to run the lateral movement demo into them, including a new
+ssh key, modifying the hosts file, and some files in the home directory.
 Press enter to continue.
 
 EOF
@@ -71,18 +71,22 @@ read
 
 echo -n "Please enter the public IP address of the machine to set up as the jumpserver: "
 read JUMPSERVER_IP
+echo -n "Please enter the username for the machine to set up as the jumpserver: "
+read JUMPSERVER_USER
 echo -n "Please enter the path to the ssh key to access the jumpserver: "
 read JUMPSERVER_SSH_KEY
 echo -n "Please enter the public IP address of the machine to set up as the buildbox: "
 read BUILDBOX_IP
+echo -n "Please enter the username for the machine to set up as the buildbox: "
+read BUILDBOX_USER
 echo -n "Please enter the path to the ssh key to access the buildbox: "
 read BUILDBOX_SSH_KEY
 
 cat << EOF
 Using:
-jumpserver: root@$JUMPSERVER_IP
+jumpserver: $JUMPSERVER_USER@$JUMPSERVER_IP
   - identity: $JUMPSERVER_SSH_KEY
-buildbox: root@$BUILDBOX_IP
+buildbox: $JUMPSERVER_USER@$BUILDBOX_IP
   - identity: $BUILDBOX_SSH_KEY
 EOF
 
@@ -96,14 +100,17 @@ fi
 ssh-keygen -q -f buildbox_key -N ""
 
 # setup jumpserver
-scp -i $JUMPSERVER_SSH_KEY buildbox_key root@$JUMPSERVER_IP:~/.ssh/buildbox_id
-ssh -i $JUMPSERVER_SSH_KEY root@$JUMPSERVER_IP "echo 'echo \"$BUILDBOX_IP buildbox\" >> /etc/hosts' >> ~/.bashrc"
-scp -i $JUMPSERVER_SSH_KEY -r files/jumpserver/ root@$JUMPSERVER_IP:~/
-ssh -i $JUMPSERVER_SSH_KEY root@$JUMPSERVER_IP "mv jumpserver/.* .; rmdir jumpserver"
+scp -i $JUMPSERVER_SSH_KEY buildbox_key $JUMPSERVER_USER@$JUMPSERVER_IP:~/.ssh/buildbox_id
+scp -i $JUMPSERVER_SSH_KEY -r files/jumpserver/ $JUMPSERVER_USER@$JUMPSERVER_IP:~/
+ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "mv -f jumpserver/.* .; rmdir jumpserver"
+ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "echo 'ssh -i ~/.ssh/buildbox_id $BUILDBOX_USER@$BUILDBOX_IP' >> ~/.bash_history"
 
 # setup buildbox
 BUILDBOX_AUTH_KEY=$(cat buildbox_key.pub)
-ssh -i $BUILDBOX_SSH_KEY root@$BUILDBOX_IP "echo '$BUILDBOX_AUTH_KEY' >> ~/.ssh/authorized_keys"
-scp -i $BUILDBOX_SSH_KEY -r files/buildbox/ root@$BUILDBOX_IP:~/
-ssh -i $BUILDBOX_SSH_KEY root@$BUILDBOX_IP "mv buildbox/* .;mv buildbox/.* .; rmdir buildbox; touch ~/.ssh/github-login"
+ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "echo '$BUILDBOX_AUTH_KEY' >> ~/.ssh/authorized_keys"
+scp -i $BUILDBOX_SSH_KEY -r files/buildbox/ $BUILDBOX_USER@$BUILDBOX_IP:~/
+ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "mv -f buildbox/* .;mv -f buildbox/.* .; rmdir buildbox; touch ~/.ssh/github-login"
+
+echo
+echo "Installation finished. Don't forget to install Spyderbat on these VMs if you haven't already."
 

