@@ -4,24 +4,22 @@ helm list -n falco | grep falco > /dev/null
 if [ $? ]; then
   echo "Falco detected; running Falco update..."
 
-  if [ ! -x "$(command -v jq)" ]; then
-    echo "The jq command was not found, please install it"
-    exit 1
+  echo -n "Please enter the Spyderbat organization ID for this cluster (empty to skip falco update): "
+  read SPYDERBAT_ORG
+  if [[ "$SPYDERBAT_ORG" != "" ]]; then
+    echo -n "Please enter a valid Spyderbat API key for this organization: "
+    read SPYDERBAT_API_KEY
+
+    helm upgrade falco falcosecurity/falco \
+      --create-namespace \
+      --namespace falco \
+      --set falcosidekick.enabled=true \
+      --set falcosidekick.config.spyderbat.orguid="$SPYDERBAT_ORG" \
+      --set falcosidekick.config.spyderbat.apiurl="${SPYDERBAT_API_URL:-https://api.spyderbat.com}" \
+      --set falcosidekick.config.spyderbat.apikey="$SPYDERBAT_API_KEY" \
+      --set extra.args=\{"-p","%proc.pid"\} \
+      --set driver.kind=modern_ebpf
   fi
-
-  SPYDERBAT_ORG=$(spyctl config view -o json | jq -r '.contexts | select(.[].name="'$(spyctl config current-context)'") | .[0].context.organization')
-  SPYCTL_SECRET=$(spyctl config view -o json | jq -r '.contexts | select(.[].name="'$(spyctl config current-context)'") | .[0].secret')
-  SPYDERBAT_API_KEY=$(spyctl config get-apisecrets "$SPYCTL_SECRET" -o json | jq -r .stringData.apikey)
-
-  helm upgrade falco falcosecurity/falco \
-    --create-namespace \
-    --namespace falco \
-    --set falcosidekick.enabled=true \
-    --set falcosidekick.config.spyderbat.orguid="$SPYDERBAT_ORG" \
-    --set falcosidekick.config.spyderbat.apiurl="${SPYDERBAT_API_URL:-https://api.spyderbat.com}" \
-    --set falcosidekick.config.spyderbat.apikey="$SPYDERBAT_API_KEY" \
-    --set extra.args=\{"-p","%proc.pid"\} \
-    --set driver.kind=modern_ebpf
 else
   echo "Falco not detected; skipping Falco update..."
 fi

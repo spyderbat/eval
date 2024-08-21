@@ -1,4 +1,4 @@
-# End-To-End Attack Demo
+# End-To-End Cluster Attack
 
 In this demo, we will demonstrate a complete attack with privilege escalation and data exfiltration, starting with a compromised set of developer credentials.
 

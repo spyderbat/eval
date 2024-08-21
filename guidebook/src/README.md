@@ -1,7 +1,5 @@
 # Introduction
 
-[[An Introduction to the guides]]
-
 ## Getting Started
 
 If you are reading this from localhost, you probably already have everything set up, and you can skip directly to one of the scenarios.

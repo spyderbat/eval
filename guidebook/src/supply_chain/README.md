@@ -1,4 +1,4 @@
-# Scenario - Supply Chain attack
+# Supply-Chain Attack
 
 This scenario demonstrates a supply chain attack where a container image is getting an update with malicious code to create a backdoor to a kubernetes cluster environment. It shows how through the use of policies for applications running on the cluster, unanticipated changes in the behavior of these application can be detected early and remediated.
 
@@ -118,4 +118,5 @@ Given the identification of the backdoor, the most prudent course of action is t
 
 Spyderbat also can provide a very strong defense against this type of attack by leveraging a Guardian policy for a container image, that will specify explicitly what is the expected behavior of the image, and automatically alert on, or even kill pods where the behavior differs.
 
-We will explore this in the next scenario.
+We will explore this in the "Image Policies — Supply-Chain Attack" scenario.
+

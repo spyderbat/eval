@@ -23,31 +23,10 @@ read USE_FALCO
 
 if [[ ! ( "${USE_FALCO:0:1}" == "n" || "${USE_FALCO:0:1}" == "N" ) ]]; then
   if [[ "${USE_FALCO:0:1}" == "y" || "${USE_FALCO:0:1}" == "Y" || "${USE_FALCO:0:1}" == "" ]]; then
-
-    if [[ -x "$(command -v jq)" && -x "$(command -v spyctl)" ]]; then
-      SPYCTL_CONTEXT=$(spyctl config current-context)
-
-      if [ $? -ne 0 ]; then
-        echo "No current spyctl context found. Please configure spyctl with access to the Spyderbat organization that the cluster is on."
-        exit 1
-      fi
-
-      echo "Installing into the spyctl context: $SPYCTL_CONTEXT"
-      echo -n "Is this right? [Y/n]: "
-      read OK
-      if [[ ! ( "${OK:0:1}" == "y" || "${OK:0:1}" == "Y" || "${OK:0:1}" == "" ) ]]; then
-        echo "Cancelling..."
-        exit 1
-      fi
-      SPYDERBAT_ORG=$(spyctl config view -o json | jq -r '.contexts | select(.[].name="'$(spyctl config current-context)'") | .[0].context.organization')
-      SPYCTL_SECRET=$(spyctl config view -o json | jq -r '.contexts | select(.[].name="'$(spyctl config current-context)'") | .[0].secret')
-      SPYDERBAT_API_KEY=$(spyctl config get-apisecrets "$SPYCTL_SECRET" -o json | jq -r .stringData.apikey)
-    else
-      echo -n "Please enter the Spyderbat organization ID for this cluster: "
-      read SPYDERBAT_ORG
-      echo -n "Please enter a valid Spyderbat API key for this organization: "
-      read SPYDERBAT_API_KEY
-    fi
+    echo -n "Please enter the Spyderbat organization ID for this cluster: "
+    read SPYDERBAT_ORG
+    echo -n "Please enter a valid Spyderbat API key for this organization: "
+    read SPYDERBAT_API_KEY
 
     helm install falco falcosecurity/falco \
       --create-namespace \
