@@ -175,29 +175,6 @@ metadata:
     env: devops
     managed-by: spyderbat-eval
 ---
-apiVersion: v1
-kind: Pod
-metadata:
-  name: bobdev
-  namespace: build
-  labels:
-    managed-by: spyderbat-eval
-spec:
-  serviceAccountName: build-sa
-  containers:
-  - name: bobdev-container
-    image: public.ecr.aws/a6j2k0g1/devops-container
-    volumeMounts:
-    - name: fake-bob-history
-      mountPath: /root
-  volumes:
-    - name: fake-bob-history
-      configMap:
-        name: fake-bob-history
-        items:
-          - key: .bash_history
-            path: .bash_history
----
 # an extra configmap to inject a fake bash history
 apiVersion: v1
 kind: ConfigMap
@@ -257,3 +234,26 @@ subjects:
   - kind: ServiceAccount
     name: build-sa
     namespace: build
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bobdev
+  namespace: build
+  labels:
+    managed-by: spyderbat-eval
+spec:
+  serviceAccountName: build-sa
+  containers:
+  - name: bobdev-container
+    image: public.ecr.aws/a6j2k0g1/devops-container
+    volumeMounts:
+    - name: fake-bob-history
+      mountPath: /root
+  volumes:
+    - name: fake-bob-history
+      configMap:
+        name: fake-bob-history
+        items:
+          - key: .bash_history
+            path: .bash_history
