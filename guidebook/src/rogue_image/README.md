@@ -1,4 +1,4 @@
-# Rogue Image
+# Cluster Policies — Rogue Image
 
 In this scenario, an attacker gains pod creation permissions on the Kubernetes cluster. Using kubectl, they start up a new pod with scanning and exploitation tools to try and gain further access. However, we will define a [Cluster Ruleset Policy](https://docs.spyderbat.com/concepts/guardian/ruleset_policies) that will detect and kill the new pod, as well as generating a flag for it.
 
