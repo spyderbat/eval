@@ -33,6 +33,7 @@ if confirm "Would you like to install the Falco integration?"; then
   read SPYDERBAT_ORG
   echo -n "Please enter a valid Spyderbat API key for this organization: "
   read SPYDERBAT_API_KEY
+  echo "Installing..."
 
   helm install falco falcosecurity/falco \
     --create-namespace \
