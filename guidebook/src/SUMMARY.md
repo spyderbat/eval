@@ -2,6 +2,7 @@
 
 [Introduction](README.md)
 
+- [Falco Event Generator Test](./event_generator/README.md)
 - [Cloud Detection and Response](./cdr.md)
     - [Container Escape Using Chroot](./container_escape_chroot/README.md)
     - [Multi-Machine Lateral Movement](./lateral/outside.md)
