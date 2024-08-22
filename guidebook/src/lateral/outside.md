@@ -4,7 +4,7 @@ This scenario shows an attacker gaining access to a public-facing server outside
 
 ## Pre-requisites
 
-This scenario requires two machines to be set up outside of the Kubernetes cluster using the install script. To begin, you will need the IP address and SSH key to access the first server (or "jumpserver").
+This scenario requires two machines to be set up outside the Kubernetes cluster using the install script. To begin, you will need the IP address and SSH key to access the first server (or "jumpserver").
 
 ## Running the Exploit
 
@@ -73,7 +73,7 @@ history
    17  history
 ```
 
-Given the build server is fetching private code using SSH, we could use the SSH keys here to login to GitHub and view the company's repositories:
+Given the build server is fetching private code using SSH, we could use the SSH keys here to log in to GitHub and view the company's repositories:
 
 ```sh
 ls ~/.ssh/
@@ -82,7 +82,7 @@ ls ~/.ssh/
 authorized_keys  github-login
 ```
 
-Instead, let's can take a look at the `payroll-app` directory to get some more details about how the build were handled:
+Instead, let's take a look at the `payroll-app` directory to get some more details about how the new version deployment process is handled:
 
 ```sh
 ls ~/payroll-app/
@@ -91,7 +91,7 @@ ls ~/payroll-app/
 cat payroll-app/Makefile
 ```
 
-And, given the access on this machine, we could edit the `payroll-app` package to add a backdoor that we could access, and then push a new version of the package.
+Given the access on this machine, we could edit the `payroll-app` package to add a backdoor that we could access, and then push a new version of the package.
 
 As an example, let's install netcat for setting up a reverse shell:
 
@@ -124,11 +124,11 @@ To see a full supply-chain exploitation and how Spyderbat detects it, visit the 
 ## Investigation
 
 
-In the Spyderbat Console, navigate to the Dashboard page to begin our investigation. In the Security tab, under "Recent Spydertraces with Score > 50", a new trace should appear, likely named "interactive_ssh_from_[IP_ADDRESS]", or "suspicious_crud_command_cat". Select these Spydertraces, and select "Start Process Investigation" to see the events of the exploit layed out in a Causal Tree in the investigation view:
+In the Spyderbat Console, navigate to the Dashboard page to begin our investigation. In the Security tab, under "Recent Spydertraces with Score > 50", a new trace should appear, likely named "interactive_ssh_from_[IP_ADDRESS]", or "suspicious_crud_command_cat". Select these Spydertraces, and select "Start Process Investigation" to see the events of the exploit laid out in a Causal Tree in the investigation view:
 
 ![An example of the resulting graph](./lateral_movement_external_graph.png)
 
-Your view should looks similar to the trace above. If it does not, make sure you selected a Spydertrace object from both machines. If you are still missing details, click the "Add Next X Objects" button on some of the traces listed in the records table next to the graph:
+Your view should look similar to the trace above. If it does not, make sure you selected a Spydertrace object from both machines on the dashboard page. If you are still missing details, click the "Add Next X Objects" button on some of the traces listed in the records table next to the graph:
 
 ![A view of the records table, showing the Add Next 18 Object button](./recordslist_example.png)
 

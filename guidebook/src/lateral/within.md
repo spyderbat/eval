@@ -43,7 +43,7 @@ Let's follow in Bob's footsteps.
 kubectl exec -it -n lateral-movement-prod $(kubectl get pods -n lateral-movement-prod -o jsonpath='{.items[0].metadata.name}') -- /bin/bash
 ```
 
-Now, we have ended on a pod in the production namespace, and a database pod on top of that. Taking a look around:
+Now, we have ended on a pod in the production namespace, and a database pod on top of that. Let's take a look around:
 
 ```
 root@payrolldb-6cd4447758-2zcq4:/# whoami
@@ -90,7 +90,7 @@ Now that we have demonstrated lateral movement within the cluster, let's see wha
 
 ![The original messy trace](./lateral_movement_messy.png)
 
-At first, the resuting graph may seem like a mess, but it is easy to clean up. First, let's make sure that we have all of the necessary information by zooming in and right-clicking on the root bach processes inside of each container, then selecting "Add X Descendants". You may also need to select "Add X Descendant Connections" if the option is available.
+At first, the resulting graph may seem like a mess, but it is easy to clean up. First, let's make sure that we have all of the necessary information by zooming in and right-clicking on the root bach processes inside of each container, then selecting "Add X Descendants". You may also need to select "Add X Descendant Connections" if available.
 
 ![The right-click menu for one of the bash processes](./lateral_graph_editing.png)
 
@@ -99,13 +99,13 @@ Next, we can take a look at bash's immediate children. It is clear from the tree
 
 ![An example graph of this exploit.](./lateral_movement_process_graph.png)
 
-With the noise out of the way, we can now clearly see the sequence of events. On the left side, the attacker accessed the bobdev container, and ran some kubectl commands. Looking at the details for the last kubectl process, we can see an exec into the payrolldb container.
+With the noise out of the way, we can now clearly see the sequence of events. On the left side, the attacker accessed the bobdev container and ran some kubectl commands. Looking at the details for the last kubectl process, we can see an exec into the payrolldb container.
 
 ![The details for the kubectl exec process](./kubectl_exec.png)
 
 From there, the attacker explored their access, then installed a data exfiltration command and ran it, connecting to another IP. To ensure that you have the whole picture, you can right-click the `nc` connection and try adding the peer connection, or run a search for the remote IP address.
 
-Once you have a graph that has all of the information you are interested in, you can save it and share it with other users in your organization by clicking "Copy Investigation Link" at the top of the graph view.
+Once you have a graph with all the information you are interested in, you can save it and share it with other users in your organization by clicking "Copy Investigation Link" at the top of the graph view.
 
 ## Next Steps
 
