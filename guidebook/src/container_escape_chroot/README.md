@@ -127,3 +127,6 @@ Here, we can clearly see the interactive shell, running the `chroot` command, an
 
 Now that the vulnerable container has been identified and the backdoor user found, steps can be taken to end the existing access, update the pod configuration to remove the possibility of a chroot, and remove the new user from the cluster host machine to prevent the attacker from regaining access.
 
+## Further Reading
+
+For an example of lateral movement between pods instead of to the host system, see the [lateral movement within the cluster demo](../lateral/within.md). For an example of lateral movement between machines ouside of a cluster see the [multi-machine lateral movement demo](../lateral/outside.md).

@@ -1,0 +1,17 @@
+FROM python:3.7
+RUN mkdir -p /usr/src/app
+COPY ./payroll-calc.py /usr/src/app
+COPY ./requirements.txt /usr/src/app
+COPY ./payroll-calc.conf /usr/src/app
+RUN apt-get -y update
+RUN wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian11-x86_64-100.8.0.deb -O mongo-tools.deb
+RUN apt-get -y install ./mongo-tools.deb
+RUN rm -f ./mongo-tools.deb
+WORKDIR /usr/src/app
+ENV LINK http://www.meetup.com/cloudyuga/
+ENV TEXT1 CloudYuga
+ENV TEXT2 Garage RSVP!
+ENV LOGO https://raw.githubusercontent.com/cloudyuga/rsvpapp/master/static/cloudyuga.png
+ENV COMPANY CloudYuga Technology Pvt. Ltd.
+RUN pip3 install -r requirements.txt
+CMD python payroll-calc.py
