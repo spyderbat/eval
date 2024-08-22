@@ -10,6 +10,22 @@ First, make sure you have `kubectl` installed, and a configuration pointing to t
 
 To install the required resources, run the `install.sh` script provided at the root of the repository. Now would also be a good time to [install Spyderbat on the cluster](https://docs.spyderbat.com/installation/spyderbat-nano-agent/kubernetes), if you haven't already.
 
+The install script will automatically ask if you want to install Falco aside Spyderbat. If you would like to install it without the script, use this command:
+
+```sh
+helm repo add falcosecurity https://falcosecurity.github.io/charts 
+helm repo update
+helm install falco falcosecurity/falco \
+    --create-namespace \
+    --namespace falco \
+    --set falcosidekick.enabled=true \
+    --set falcosidekick.config.spyderbat.orguid="SPYDERBAT_ORG" \
+    --set falcosidekick.config.spyderbat.apiurl="https://api.spyderbat.com" \
+    --set falcosidekick.config.spyderbat.apikey="SPYDERBAT_API_KEY" \
+    --set extra.args=\{"-p","%proc.pid"\} \
+    --set driver.kind=modern_ebpf
+```
+
 ### Accessing
 
 To access the guidebook and walk through the samples, run the `access.sh` command. This will use kubectl to set up port-forwarding rules to allow you to connect directly to all of the resources you just installed.

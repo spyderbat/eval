@@ -35,6 +35,8 @@ if confirm "Would you like to install the Falco integration?"; then
   read SPYDERBAT_API_KEY
   echo "Installing..."
 
+  helm repo add falcosecurity https://falcosecurity.github.io/charts 
+  helm repo update
   helm install falco falcosecurity/falco \
     --create-namespace \
     --namespace falco \
