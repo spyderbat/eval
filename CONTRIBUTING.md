@@ -33,7 +33,7 @@ make docker-build
 
 ### Publishing the Updates
 
-1. Update the guidebook image by running `make update-image` in the `guidebook` directory
+1. Update the guidebook image by merging into the main branch and creating a new release
 2. Run the `scripts/update.sh` script with any clusters that need updating
 
 ## Scripts

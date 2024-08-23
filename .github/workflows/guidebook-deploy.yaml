@@ -1,0 +1,28 @@
+name: Guidebook Image Publish
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+
+  build:
+    runs-on: [self-hosted, x64]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+         aws-region: us-east-1
+         role-duration-seconds: 600
+    - name: Build the Docker image
+      working-directory: ./guidebook
+      run: make docker-build
+    - name: Push the image
+      working-directory: ./guidebook
+      run: make update-image
+    - name: Get Tag
+      run: echo "${{github.ref_name}}"
+
