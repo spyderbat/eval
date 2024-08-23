@@ -1,47 +1,34 @@
 #!/bin/bash
 
-function confirm() {
-  echo -n $1 "[Y/n]: "
-  read ANSWER
-  if [[ ! ( "${ANSWER:0:1}" == "y" || "${ANSWER:0:1}" == "Y" || "${ANSWER:0:1}" == "" ) ]]; then
-    return 1
-  else
-    return 0
-  fi
+SCRIPTPATH="$( cd "$(dirname -- "${BASH_SOURCE[0]}")" ; pwd -P )"
+source $SCRIPTPATH/prelude.sh
+
+function get_falco_details() {
+    echo "Please enter the Spyderbat organization ID for this cluster: "
+    read -p "==> " -e -i "$SPYDERBAT_ORG" SPYDERBAT_ORG
+    echo "Please enter a valid Spyderbat API key for this organization: "
+    read -p "==> " -e SPYDERBAT_API_KEY
 }
 
-if [ ! -x "$(command -v kubectl)" ]; then
-  echo "Kubectl not installed. Visit https://kubernetes.io/docs/tasks/tools/ to install it."
-  exit 1
-fi
-
-CONTEXT=$(kubectl config current-context)
-
-if [ $? -ne 0 ]; then
-  echo "No current kubectl context found. Please configure kubectl with access to the cluster you want to install on."
-  exit 1
-fi
-
-cat << EOF
-== Spyderbat Evaluation Samples Installer ==
-
-Installing into the kubectl context: $CONTEXT
-EOF
-if confirm "Is this correct?"; then
-  # continue
-else
-  echo "Cancelling..."
-  echo "Set the kubectl context to the desired install context then re-run this script."
-  exit 1
-fi
-
 helm list -n falco | grep falco > /dev/null
-if [ $? ]; then
+if [[ $? == 1 ]]; then
   if confirm "Would you like to install the Falco integration?"; then
-    echo -n "Please enter the Spyderbat organization ID for this cluster: "
-    read SPYDERBAT_ORG
-    echo -n "Please enter a valid Spyderbat API key for this organization: "
-    read SPYDERBAT_API_KEY
+
+    if [[ (! -z "$SPYDERBAT_ORG") && (! -z "$SPYDERBAT_API_KEY") ]]; then
+      cat << EOF
+Previous configuration found:
+  Spyderbat organization ID: $SPYDERBAT_ORG
+  Spyderbat API Key: ${SPYDERBAT_API_KEY:0:3}...${SPYDERBAT_API_KEY: -3}
+EOF
+      if confirm "Is this correct?"; then
+        echo
+      else
+        get_falco_details
+      fi
+    else
+      get_falco_details
+    fi
+
     echo "Installing..."
 
     helm repo add falcosecurity https://falcosecurity.github.io/charts 
@@ -58,7 +45,11 @@ if [ $? ]; then
   else
     echo "Skipping falco integration..."
   fi
+else
+  echo "Falco detected, not reinstalling it"
 fi
+
+echo "Running Kubectl Apply..."
 
 kubectl apply -R -f modules
 
@@ -68,49 +59,35 @@ if confirm "Would you like to configure them now?"; then
 else
   echo "Not configuring lateral movement scenario."
   echo "If you would like to set it up in the future, re-run this script"
+  saveconfig
   exit 0
 fi
 
-cat << EOF
+if [ -z $JUMPSERVER_IP ]; then
+  cat << EOF
 
 To continue, you will need two public-facing machines with Spyderbat installed,
 and the ssh keys to access them as the given user. The install script will copy
 the files necessary to run the lateral movement demo into them, including a new
 ssh key, modifying the bash history, and adding some files in the home directory.
+
 Press enter to continue.
 
 EOF
-read
-
-echo -n "Please enter the public IP address of the machine to set up as the jumpserver: "
-read JUMPSERVER_IP
-echo -n "Please enter the username for the machine to set up as the jumpserver: "
-read JUMPSERVER_USER
-echo -n "Please enter the path to the ssh key to access the jumpserver: "
-read JUMPSERVER_SSH_KEY
-echo -n "Please enter the public IP address of the machine to set up as the buildbox: "
-read BUILDBOX_IP
-echo -n "Please enter the username for the machine to set up as the buildbox: "
-read BUILDBOX_USER
-echo -n "Please enter the path to the ssh key to access the buildbox: "
-read BUILDBOX_SSH_KEY
-
-cat << EOF
-Using:
-jumpserver: $JUMPSERVER_USER@$JUMPSERVER_IP
-  - identity: $JUMPSERVER_SSH_KEY
-buildbox: $BUILDBOX_USER@$BUILDBOX_IP
-  - identity: $BUILDBOX_SSH_KEY
-EOF
-
-if confirm "Is this correct?"; then
-  echo "Continuing..."
+  read
 else
-  echo "Cancelling..."
-  echo "Re-run the script to enter the correct information"
-  exit 1
+  cat << EOF
+
+The install script will copy the files necessary to run the lateral movement demo
+into these machines, including a new ssh key, modifying the bash history, and adding some
+files in the home directory.
+
+EOF
 fi
 
+get_jumpbox_buildbox_details
+
+echo "Setting up VMs..."
 ssh-keygen -q -f buildbox_key -N ""
 
 # setup jumpserver
@@ -127,4 +104,5 @@ ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "mv -f buildbox/* .;mv -f b
 
 echo
 echo "Installation finished. Don't forget to install Spyderbat on these VMs if you haven't already."
+saveconfig
 
