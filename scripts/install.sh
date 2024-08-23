@@ -1,0 +1,108 @@
+#!/bin/bash
+
+SCRIPTPATH="$( cd "$(dirname -- "${BASH_SOURCE[0]}")" ; pwd -P )"
+source $SCRIPTPATH/prelude.sh
+
+function get_falco_details() {
+    echo "Please enter the Spyderbat organization ID for this cluster: "
+    read -p "==> " -e -i "$SPYDERBAT_ORG" SPYDERBAT_ORG
+    echo "Please enter a valid Spyderbat API key for this organization: "
+    read -p "==> " -e SPYDERBAT_API_KEY
+}
+
+helm list -n falco | grep falco > /dev/null
+if [[ $? == 1 ]]; then
+  if confirm "Would you like to install the Falco integration?"; then
+
+    if [[ (! -z "$SPYDERBAT_ORG") && (! -z "$SPYDERBAT_API_KEY") ]]; then
+      cat << EOF
+Previous configuration found:
+  Spyderbat organization ID: $SPYDERBAT_ORG
+  Spyderbat API Key: ${SPYDERBAT_API_KEY:0:3}...${SPYDERBAT_API_KEY: -3}
+EOF
+      if confirm "Is this correct?"; then
+        echo
+      else
+        get_falco_details
+      fi
+    else
+      get_falco_details
+    fi
+
+    echo "Installing..."
+
+    helm repo add falcosecurity https://falcosecurity.github.io/charts 
+    helm repo update
+    helm install falco falcosecurity/falco \
+      --create-namespace \
+      --namespace falco \
+      --set falcosidekick.enabled=true \
+      --set falcosidekick.config.spyderbat.orguid="$SPYDERBAT_ORG" \
+      --set falcosidekick.config.spyderbat.apiurl="${SPYDERBAT_API_URL:-https://api.spyderbat.com}" \
+      --set falcosidekick.config.spyderbat.apikey="$SPYDERBAT_API_KEY" \
+      --set extra.args=\{"-p","%proc.pid"\} \
+      --set driver.kind=modern_ebpf
+  else
+    echo "Skipping falco integration..."
+  fi
+else
+  echo "Falco detected, not reinstalling it"
+fi
+
+echo "Running Kubectl Apply..."
+
+kubectl apply -R -f modules
+
+echo "The lateral movement scenario utilizes two extra cloud machines."
+if confirm "Would you like to configure them now?"; then
+  echo "Continuing..."
+else
+  echo "Not configuring lateral movement scenario."
+  echo "If you would like to set it up in the future, re-run this script"
+  saveconfig
+  exit 0
+fi
+
+if [ -z $JUMPSERVER_IP ]; then
+  cat << EOF
+
+To continue, you will need two public-facing machines with Spyderbat installed,
+and the ssh keys to access them as the given user. The install script will copy
+the files necessary to run the lateral movement demo into them, including a new
+ssh key, modifying the bash history, and adding some files in the home directory.
+
+Press enter to continue.
+
+EOF
+  read
+else
+  cat << EOF
+
+The install script will copy the files necessary to run the lateral movement demo
+into these machines, including a new ssh key, modifying the bash history, and adding some
+files in the home directory.
+
+EOF
+fi
+
+get_jumpbox_buildbox_details
+
+echo "Setting up VMs..."
+ssh-keygen -q -f buildbox_key -N ""
+
+# setup jumpserver
+scp -i $JUMPSERVER_SSH_KEY buildbox_key $JUMPSERVER_USER@$JUMPSERVER_IP:~/.ssh/buildbox_id
+scp -i $JUMPSERVER_SSH_KEY -r files/jumpserver/ $JUMPSERVER_USER@$JUMPSERVER_IP:~/
+ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "mv -f jumpserver/.* .; rm -r jumpserver"
+ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "echo 'ssh -i ~/.ssh/buildbox_id $BUILDBOX_USER@$BUILDBOX_IP' >> ~/.bash_history"
+
+# setup buildbox
+BUILDBOX_AUTH_KEY=$(cat buildbox_key.pub)
+ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "echo '$BUILDBOX_AUTH_KEY' >> ~/.ssh/authorized_keys"
+scp -i $BUILDBOX_SSH_KEY -r files/buildbox/ $BUILDBOX_USER@$BUILDBOX_IP:~/
+ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "mv -f buildbox/* .;mv -f buildbox/.* .; rm -r buildbox; touch ~/.ssh/github-login"
+
+echo
+echo "Installation finished. Don't forget to install Spyderbat on these VMs if you haven't already."
+saveconfig
+
