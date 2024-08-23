@@ -6,9 +6,9 @@ A set of tools for evaluating and showcasing the features offered by Spyderbat.
 
 ### Installation
 
-First, make sure you have `kubectl` installed, and a configuration pointing to the cluster you want to install on. Then, clone this repository.
+First, make sure you have `kubectl` and `helm` installed, and a configuration pointing to the cluster you want to install on. Then, clone this repository.
 
-To install the required resources, run the `install.sh` script provided at the root of the repository. Now would also be a good time to [install Spyderbat on the cluster](https://docs.spyderbat.com/installation/spyderbat-nano-agent/kubernetes), if you haven't already.
+To install the required resources, run the `install.sh` script provided in the `scripts` directory. Now would also be a good time to [install Spyderbat on the cluster](https://docs.spyderbat.com/installation/spyderbat-nano-agent/kubernetes), if you haven't already.
 
 The install script will automatically ask if you want to install Falco aside Spyderbat. If you would like to install it without the script, use this command:
 

@@ -18,11 +18,18 @@ source $SCRIPTPATH/utils.sh
 
 readconfig
 
+# ensure that the necessary programs are available
+if [ ! -x "$(command -v kubectl)" ]; then
+  echo "Kubectl not installed. Visit https://kubernetes.io/docs/tasks/tools/ to install it."
+  exit 1
+fi
+if [ ! -x "$(command -v helm)" ]; then
+  echo "Helm not installed. Visit https://helm.sh/docs/intro/install/ to install it."
+  exit 1
+fi
+
 if [[ -z "$KUBECTL_CONTEXT" || "$KUBECTL_CONTEXT" != "$(kubectl config current-context)" ]]; then
-  if [ ! -x "$(command -v kubectl)" ]; then
-    echo "Kubectl not installed. Visit https://kubernetes.io/docs/tasks/tools/ to install it."
-    exit 1
-  fi
+
 
   export KUBECTL_CONTEXT=$(kubectl config current-context)
 
