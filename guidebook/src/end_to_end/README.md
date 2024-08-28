@@ -10,7 +10,7 @@ This scenario utilizes Falco containers, so you need to have the Falco integrati
 kubectl get pods -n falco
 ```
 
-If it is not present, re-run the `install.sh` script and enable the Falco integration.
+If it is not present, re-run the `install.sh` script in the scripts directory and enable the Falco integration.
 
 ## Background
 
