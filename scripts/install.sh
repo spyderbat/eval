@@ -51,7 +51,7 @@ fi
 
 echo "Running Kubectl Apply..."
 
-kubectl apply -R -f modules
+kubectl apply -R -f $SCRIPTPATH/../modules
 
 echo "The lateral movement scenario utilizes two extra cloud machines."
 if confirm "Would you like to configure them now?"; then
@@ -69,7 +69,8 @@ if [ -z $JUMPSERVER_IP ]; then
 To continue, you will need two public-facing machines with Spyderbat installed,
 and the ssh keys to access them as the given user. The install script will copy
 the files necessary to run the lateral movement demo into them, including a new
-ssh key, modifying the bash history, and adding some files in the home directory.
+ssh key and add some files in the home directory. It will also modify the bashrc,
+bash history, and hostname.
 
 Press enter to continue.
 
@@ -78,9 +79,9 @@ EOF
 else
   cat << EOF
 
-The install script will copy the files necessary to run the lateral movement demo
-into these machines, including a new ssh key, modifying the bash history, and adding some
-files in the home directory.
+The install script will copy the files necessary to run the lateral movement
+demo into them, including a new ssh key and add some files in the home directory.
+It will also modify the bashrc, bash history, and hostname.
 
 EOF
 fi
@@ -93,14 +94,13 @@ ssh-keygen -q -f buildbox_key -N ""
 # setup jumpserver
 scp -i $JUMPSERVER_SSH_KEY buildbox_key $JUMPSERVER_USER@$JUMPSERVER_IP:~/.ssh/buildbox_id
 scp -i $JUMPSERVER_SSH_KEY -r files/jumpserver/ $JUMPSERVER_USER@$JUMPSERVER_IP:~/
-ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "mv -f jumpserver/.* .; rm -r jumpserver"
-ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "echo 'ssh -i ~/.ssh/buildbox_id $BUILDBOX_USER@$BUILDBOX_IP' >> ~/.bash_history"
+ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "mv -f jumpserver/.* .; rm -r jumpserver; echo 'ssh -i ~/.ssh/buildbox_id $BUILDBOX_USER@$BUILDBOX_IP' >> ~/.bash_history; sudo hostnamectl set-hostname jumpserver; echo 'export NICKNAME=jumpserver' >> ~/.bashrc"
 
 # setup buildbox
 BUILDBOX_AUTH_KEY=$(cat buildbox_key.pub)
 ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "echo '$BUILDBOX_AUTH_KEY' >> ~/.ssh/authorized_keys"
 scp -i $BUILDBOX_SSH_KEY -r files/buildbox/ $BUILDBOX_USER@$BUILDBOX_IP:~/
-ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "mv -f buildbox/* .;mv -f buildbox/.* .; rm -r buildbox; touch ~/.ssh/github-login"
+ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "mv -f buildbox/* .;mv -f buildbox/.* .; rm -r buildbox; ssh-keygen -q -f ~/.ssh/github-login -N ''; sudo hostnamectl set-hostname buildbox; echo 'export NICKNAME=buildbox' >> ~/.bashrc"
 
 echo
 echo "Installation finished. Don't forget to install Spyderbat on these VMs if you haven't already."

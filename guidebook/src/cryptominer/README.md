@@ -4,7 +4,7 @@
 
 ## Setup
 
-For this scenario, we have set up an unguarded Jupyter Notebook pod within the cluster. To start, let's see it in use, and create some "normal" activity that we will use later to generate a baseline fingerprint. After running the access script (`./access.sh`), you can reach the notebook from <a href="http://localhost:1234" target="_blank">localhost:1234</a>.
+For this scenario, we have set up an unguarded Jupyter Notebook pod within the cluster. To start, let's see it in use, and create some "normal" activity that we will use later to generate a baseline fingerprint. After running the access script (`./scripts/access.sh`), you can reach the notebook from <a href="http://localhost:1234" target="_blank">localhost:1234</a>.
 
 This is a standard Jupyter notebook, running the `jupyter/minimal-notebook` docker image. Select the Python 3 notebook, and run some commands in it.
 

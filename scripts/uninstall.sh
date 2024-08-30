@@ -30,9 +30,10 @@ if [ -z $JUMPSERVER_IP ]; then
 
 To continue, you will need the credentials to access the machines already set up
 in the install script. This script will remove the files installed by the install
-script and uninstall netcat. To prevent breaking access to the machine, it will not 
-remove the generated public key from the buildbox authorized_keys. It will also
-not delete the bash history.
+script, uninstall netcat, and remove the backdoor users. To prevent breaking access
+to the machine, it will not remove the generated public key from the buildbox
+authorized_keys, delete the bash history, reset the bashrc, reset the hostname, or
+reset the sudoers file.
 
 Press enter to continue.
 
@@ -41,9 +42,11 @@ EOF
 else
   cat << EOF
 
-This script will remove the files installed by the install script and uninstall
-netcat. To prevent breaking access to the machine, it will not remove the generated
-public key from the buildbox authorized_keys. It will also not delete the bash history.
+This script will remove the files installed by the install
+script, uninstall netcat, and remove the backdoor users. To prevent breaking access
+to the machine, it will not remove the generated public key from the buildbox
+authorized_keys, delete the bash history, reset the bashrc, reset the hostname, or
+reset the sudoers file.
 
 EOF
 fi
@@ -53,10 +56,10 @@ get_jumpbox_buildbox_details
 echo "Cleaning up VMs..."
 
 # jumpserver
-ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "rm .ssh/buildbox_id"
+ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "rm -rf .ssh/buildbox_id; sudo userdel -rf backdoor"
 
 # buildbox
-ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP 'rm .ssh/github-login; rm -r payroll-app; if [ -x "$(command -v yum)" ]; then sudo yum remove nmap-ncat -yq; else sudo apt remove ncat; fi'
+ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP 'rm -rf ~/.ssh/github-login ~/payroll-app; if [ -x "$(command -v yum)" ]; then sudo yum remove nmap-ncat -yq; else sudo apt remove ncat; fi; sudo userdel -rf backdoor; sudo killall -9 nc'
 
 echo
 echo "Uninstall finished"

