@@ -21,7 +21,7 @@ helm install falco falcosecurity/falco \
     --set falcosidekick.config.spyderbat.apiurl="https://api.spyderbat.com" \
     --set falcosidekick.config.spyderbat.apikey="SPYDERBAT_API_KEY" \
     --set extra.args=\{"-p","%proc.pid"\} \
-    --set driver.kind=modern_ebpf
+    --set driver.kind=ebpf
 ```
 
 Installing the event generator is then straightforward (if you added the falcosecurity repo in the above command):
@@ -98,7 +98,7 @@ helm upgrade falco falcosecurity/falco \
     --set extra.args=\{"-p","%proc.pid"\}
 ```
 
-Or with the standard eBPF probe:
+Or with the modern eBPF probe:
 
 ```sh
 helm upgrade falco falcosecurity/falco \
@@ -109,7 +109,7 @@ helm upgrade falco falcosecurity/falco \
     --set falcosidekick.config.spyderbat.apiurl="https://api.spyderbat.com" \
     --set falcosidekick.config.spyderbat.apikey="SPYDERBAT_API_KEY" \
     --set extra.args=\{"-p","%proc.pid"\} \
-    --set driver.kind=ebpf
+    --set driver.kind=modern_ebpf
 ```
 
 If the Falco pod is working, check that the sidekick pod has the right API values:

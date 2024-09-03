@@ -41,7 +41,7 @@ EOF
       --set falcosidekick.config.spyderbat.apiurl="${SPYDERBAT_API_URL:-https://api.spyderbat.com}" \
       --set falcosidekick.config.spyderbat.apikey="$SPYDERBAT_API_KEY" \
       --set extra.args=\{"-p","%proc.pid"\} \
-      --set driver.kind=modern_ebpf
+      --set driver.kind=ebpf
   else
     echo "Skipping falco integration..."
   fi
