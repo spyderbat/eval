@@ -11,21 +11,21 @@ A set of tools for evaluating and showcasing the features offered by Spyderbat.
 
 You will need a Kubernetes cluster in the cloud or locally that can be used for the demos. Several demos include running realistic exploits against this cluster, so it should not contain any sensitive applications. Each node should have around 32 GB of storage to have enough space for the images that will be installed. Multiple nodes are recommended, but not required.
 
-<details>
+</details>
 
 <details>
     <summary>Kubectl and Helm</summary>
 
 To install the evaluation environment, you will need both the kubectl and helm command line tools configured to reach your target cluster.
 
-<details>
+</details>
 
 <details>
     <summary>(Optional) Two other servers</summary>
 
 For one of the lateral movement demos, you will need two more cloud servers and the SSH credentials to reach them. These servers don't need to be large; a t2.micro instance on AWS is sufficient. Similar to the cluster, these should not be used for other services, as the installation and demos destructively modify some machine configuration.
 
-<details>
+</details>
 
 ### Installation
 
