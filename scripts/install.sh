@@ -93,13 +93,13 @@ ssh-keygen -q -f buildbox_key -N ""
 
 # setup jumpserver
 scp -i $JUMPSERVER_SSH_KEY buildbox_key $JUMPSERVER_USER@$JUMPSERVER_IP:~/.ssh/buildbox_id
-scp -i $JUMPSERVER_SSH_KEY -r files/jumpserver/ $JUMPSERVER_USER@$JUMPSERVER_IP:~/
+scp -i $JUMPSERVER_SSH_KEY -r $SCRIPTPATH/../files/jumpserver/ $JUMPSERVER_USER@$JUMPSERVER_IP:~/
 ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "mv -f jumpserver/.* .; rm -r jumpserver; echo 'ssh -i ~/.ssh/buildbox_id $BUILDBOX_USER@$BUILDBOX_IP' >> ~/.bash_history; sudo hostnamectl set-hostname jumpserver; echo 'export NICKNAME=jumpserver' >> ~/.bashrc"
 
 # setup buildbox
 BUILDBOX_AUTH_KEY=$(cat buildbox_key.pub)
 ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "echo '$BUILDBOX_AUTH_KEY' >> ~/.ssh/authorized_keys"
-scp -i $BUILDBOX_SSH_KEY -r files/buildbox/ $BUILDBOX_USER@$BUILDBOX_IP:~/
+scp -i $BUILDBOX_SSH_KEY -r $SCRIPTPATH/../files/buildbox/ $BUILDBOX_USER@$BUILDBOX_IP:~/
 ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "mv -f buildbox/* .;mv -f buildbox/.* .; rm -r buildbox; ssh-keygen -q -f ~/.ssh/github-login -N ''; sudo hostnamectl set-hostname buildbox; echo 'export NICKNAME=buildbox' >> ~/.bashrc"
 
 echo

@@ -37,6 +37,10 @@ The event generator will take a few seconds to start triggering events, and will
 
 Once Falco starts detecting suspicious activity, respective “FALCO” labeled flags will be generated in the Spyderbat data stream and made visible in the Spydergraph Investigation section. These Flags can be located by running a search query. You will select the “Search” option in the left-hand navigation menu, run your search query, and then select a Flag you wish to investigate on a visual causal graph by checking the box and clicking “Start Investigation”:
 
+```
+short_name = "falco_flag"
+```
+
 ![An example of searching for Falco objects](./falco_search_example.png)
 
 If you do not see any results within a minute or so from starting the event generator, try some of the troubleshooting steps [below](#troubleshooting).
