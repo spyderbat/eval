@@ -96,7 +96,7 @@ ffe96bd760b35       7 minutes ago       Ready               payroll-calculator-8
 Let's look at the containers that are named payrolldb:
 
 ```sh
-crictl ps --name falco
+crictl ps --name payrolldb
 ```
 ```
 CONTAINER           IMAGE                      CREATED             STATE               NAME                ATTEMPT             POD ID              POD
