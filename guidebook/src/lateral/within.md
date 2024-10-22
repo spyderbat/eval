@@ -12,6 +12,33 @@ Let's exec into the developer pod to begin.
 kubectl exec -it -n lateral-movement-build bobdev -- /bin/bash
 ```
 
+Let's take a look around to see what we can do:
+
+```
+bash-4.2# id
+uid=0(root) gid=0(root) groups=0(root)
+
+bash-4.2# sudo -l
+bash: sudo: command not found
+
+bash-4.2# ps -aux
+bash: ps: command not found
+```
+
+Looks like a pretty locked down container. Let's use a one-liner to check what is running on it instead of `ps`:
+
+```sh
+for pid in $(ls /proc | grep -P '[0-9]'); do cat /proc/$pid/cmdline 2>/dev/null | tr '\0' ' ' && echo; done
+```
+
+```
+sleep infinity 
+/bin/bash 
+/bin/bash
+```
+
+It looks like this container isn't doing anything (aside from our shell); it must just be for debug access.
+
 Taking a look at the bash history, it looks like Bob used kubectl to get into another namespace:
 
 ```sh
@@ -24,7 +51,11 @@ history
     4  kubectl get pods -n lateral-movement-prod
     5  kubectl describe pods -n lateral-movement-prod
     6  kubectl exec -n lateral-movement-prod payrolldb-6f7996c855-vrmrt -- hostname
-    7  history
+    7  id
+    8  sudo -l
+    9  ps -aux
+   10  for pid in $(ls /proc | grep -P '[0-9]'); do cat /proc/$pid/cmdline 2>/dev/null | tr '\0' ' ' && echo; done
+   11  history
 ```
 
 It looks like the deployment he was accessing is still here:
@@ -90,7 +121,7 @@ Now that we have demonstrated lateral movement within the cluster, let's see wha
 
 ![The original messy trace](./lateral_movement_messy.png)
 
-At first, the resulting graph may seem like a mess, but it is easy to clean up. First, let's make sure that we have all of the necessary information by zooming in and right-clicking on the root bach processes inside of each container, then selecting "Add X Descendants". You may also need to select "Add X Descendant Connections" if available.
+At first, the resulting graph may seem like a mess, but it is easy to clean up. First, let's make sure that we have all of the necessary information by zooming in and right-clicking on the root bash processes inside of each container, then selecting "Add X Descendants". You may also need to select "Add X Descendant Connections" if available.
 
 ![The right-click menu for one of the bash processes](./lateral_graph_editing.png)
 
@@ -99,7 +130,11 @@ Next, we can take a look at bash's immediate children. It is clear from the tree
 
 ![An example graph of this exploit.](./lateral_movement_process_graph.png)
 
-With the noise out of the way, we can now clearly see the sequence of events. On the left side, the attacker accessed the bobdev container and ran some kubectl commands. Looking at the details for the last kubectl process, we can see an exec into the payrolldb container.
+To further help understand the attack, we can use the bash command viewer: click on the bash process inside each pod and expand the viewer in the top right corner.
+
+![An example of the bash viewer](./bobdev-bash-viewer.png)
+
+With the noise out of the way, we can now more clearly see the sequence of events. On the leftmost machine, the attacker accessed the bobdev container and ran some kubectl commands. Looking at the command for the last kubectl process, we can see an exec into the payrolldb container.
 
 ![The details for the kubectl exec process](./kubectl_exec.png)
 
