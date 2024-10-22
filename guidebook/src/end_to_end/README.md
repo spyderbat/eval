@@ -295,7 +295,7 @@ In a real environment, we would likely investigate these one at a time and event
 
 > **Note**
 > 
-> If you followed the instructons for an environment without docker, your investigation will look a bit different. In particuar, the traces in the payroll pod might not show up as a Spydertrace, due to how the processes were run. However, all of the `crictl` commands should show up in the falco pod. To see the processes in the payroll pod, try using search to add in the extra context.
+> If you followed the instructions for an environment without docker, your investigation will look a bit different. In particular, the traces in the payroll pod might not show up as a Spydertrace, due to how the processes were run. However, all of the `crictl` commands should show up in the Falco pod. To see the processes in the payroll pod, try using search to add in the extra context.
 >
 > Select one of the `crictl` processes, and find one with the container ID listed in its command (e.g. `/tmp/crictl --config /tmp/crictl.yaml exec -sit 4ca28124cd0ed bash -c ps -aux`). Copy that ID, navigate to the search page, and search for containers with a container ID that starts with the copied ID (`container_id ~= "4ca28124cd0ed*"`). Then select these, and click "Add to existing investigation".
 
