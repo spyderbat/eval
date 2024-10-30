@@ -5,9 +5,12 @@ source $SCRIPTPATH/prelude.sh
 
 function get_falco_details() {
     echo "Please enter the Spyderbat organization ID for this cluster: "
-    read -p "==> " -e -i "$SPYDERBAT_ORG" SPYDERBAT_ORG
+    echo "Previous value: $SPYDERBAT_ORG"
+    echo -n "==> "
+    read SPYDERBAT_ORG
     echo "Please enter a valid Spyderbat API key for this organization: "
-    read -p "==> " -e SPYDERBAT_API_KEY
+    echo -n "==> "
+    read SPYDERBAT_API_KEY
 }
 
 helm list -n falco | grep falco > /dev/null
