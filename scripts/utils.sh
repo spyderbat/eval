@@ -66,18 +66,47 @@ EOF
 function get_jumpbox_buildbox_details() {
   while true; do
     if [ -z "$VMS_SET" ]; then
-      echo "Please enter the public IP address of the machine to set up as the jumpserver: "
-      read -p "==> " -e -i "$JUMPSERVER_IP" JUMPSERVER_IP
-      echo "Please enter the username for the machine to set up as the jumpserver: "
-      read -p "==> " -e -i "$JUMPSERVER_USER" JUMPSERVER_USER
-      echo "Please enter the path to the ssh key to access the jumpserver: "
-      read -p "==> " -e -i "$JUMPSERVER_SSH_KEY" JUMPSERVER_SSH_KEY
-      echo "Please enter the public IP address of the machine to set up as the buildbox: "
-      read -p "==> " -e -i "$BUILDBOX_IP" BUILDBOX_IP
-      echo "Please enter the username for the machine to set up as the buildbox: "
-      read -p "==> " -e -i "${BUILDBOX_USER:-$JUMPSERVER_USER}" BUILDBOX_USER
-      echo "Please enter the path to the ssh key to access the buildbox: "
-      read -p "==> " -e -i "${BUILDBOX_SSH_KEY:-$JUMPSERVER_SSH_KEY}" BUILDBOX_SSH_KEY
+      echo test | read -p "==> " -i "test" -e TEST_VAR > /dev/null 2>&1
+      if [[ $? != 0 ]]; then
+        # we can't use fancy read features
+        echo "Please enter the public IP address of the machine to set up as the jumpserver: "
+        echo "Previous value: $JUMPSERVER_IP"
+        echo -n "==> "
+        read JUMPSERVER_IP
+        echo "Please enter the username for the machine to set up as the jumpserver: "
+        echo "Previous value: $JUMPSERVER_USER"
+        echo -n "==> "
+        read JUMPSERVER_USER
+        echo "Please enter the path to the ssh key to access the jumpserver: "
+        echo "Previous value: $JUMPSERVER_SSH_KEY"
+        echo -n "==> "
+        read JUMPSERVER_SSH_KEY
+        echo "Please enter the public IP address of the machine to set up as the buildbox: "
+        echo "Previous value: $BUILDBOX_IP"
+        echo -n "==> "
+        read BUILDBOX_IP
+        echo "Please enter the username for the machine to set up as the buildbox: "
+        echo "Previous value: ${BUILDBOX_USER:-$JUMPSERVER_USER}"
+        echo -n "==> "
+        read BUILDBOX_USER
+        echo "Please enter the path to the ssh key to access the buildbox: "
+        echo "Previous value: ${BUILDBOX_SSH_KEY:-$JUMPSERVER_SSH_KEY}"
+        echo -n "==> "
+        read BUILDBOX_SSH_KEY
+      else
+        echo "Please enter the public IP address of the machine to set up as the jumpserver: "
+        read -p "==> " -e -i "$JUMPSERVER_IP" JUMPSERVER_IP
+        echo "Please enter the username for the machine to set up as the jumpserver: "
+        read -p "==> " -e -i "$JUMPSERVER_USER" JUMPSERVER_USER
+        echo "Please enter the path to the ssh key to access the jumpserver: "
+        read -p "==> " -e -i "$JUMPSERVER_SSH_KEY" JUMPSERVER_SSH_KEY
+        echo "Please enter the public IP address of the machine to set up as the buildbox: "
+        read -p "==> " -e -i "$BUILDBOX_IP" BUILDBOX_IP
+        echo "Please enter the username for the machine to set up as the buildbox: "
+        read -p "==> " -e -i "${BUILDBOX_USER:-$JUMPSERVER_USER}" BUILDBOX_USER
+        echo "Please enter the path to the ssh key to access the buildbox: "
+        read -p "==> " -e -i "${BUILDBOX_SSH_KEY:-$JUMPSERVER_SSH_KEY}" BUILDBOX_SSH_KEY
+      fi
       export VMS_SET=1
     fi
 
