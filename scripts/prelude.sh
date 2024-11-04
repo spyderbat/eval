@@ -28,12 +28,11 @@ if [ ! -x "$(command -v helm)" ]; then
   exit 1
 fi
 
-if [[ -z "$KUBECTL_CONTEXT" || "$KUBECTL_CONTEXT" != "$(kubectl config current-context)" ]]; then
-
+if [[ -z "$KUBECTL_CONTEXT" || "$KUBECTL_CONTEXT" != "$(kubectl config current-context 2> /dev/null)" ]]; then
 
   export KUBECTL_CONTEXT=$(kubectl config current-context)
 
-  if [ $? -ne 0 ]; then
+  if [ -z "$KUBECTL_CONTEXT" ]; then
     echo "No current kubectl context found. Please configure kubectl with access to the cluster you want to install on."
     exit 1
   fi
@@ -48,5 +47,21 @@ if [[ -z "$KUBECTL_CONTEXT" || "$KUBECTL_CONTEXT" != "$(kubectl config current-c
   fi
 else
   echo "Using the kubectl context: $KUBECTL_CONTEXT"
+fi
+
+# test the connection with the cluster
+kubectl get pods > /dev/null
+if [ $? -ne 0 ]; then
+  echo
+  ping -c 1 google.com > /dev/null
+  if [ $? -ne 0 ]; then
+    echo
+    echo "Connection to the network failed (checking google.com); is your internet working?"
+    exit 1
+  else
+    echo
+    echo "You have internet, but connection to your cluster failed; are you behind a proxy?"
+    exit 1
+  fi
 fi
 
