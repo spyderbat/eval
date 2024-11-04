@@ -78,7 +78,13 @@ Lastly, let's print the key so we have it to use later. You don't need to save t
 cat ~/.ssh/id
 ```
 
-Now, type `Ctrl-d` or `exit` to go back to the original user. Let's take a look at the history to see what the original user did:
+Now, type `Ctrl-d` or `exit` to go back to the original user.
+
+```sh
+exit
+```
+
+Let's take a look at the history to see what the original user did:
 
 ```sh
 history
@@ -117,6 +123,17 @@ ssh -i ~/.ssh/buildbox_id BUILDBOX_USER@BUILDBOX_IP
 ```
 
 Looking around here shows that the machine is set up the same way.
+
+```
+[ec2-user@buildbox ~]$ id
+uid=1000(ec2-user) gid=1000(ec2-user) groups=1000(ec2-user),4(adm),10(wheel),190(systemd-journal) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+
+[ec2-user@buildbox ~]$ sudo -l
+...
+User ec2-user may run the following commands on buildbox:
+    (ALL) ALL
+    (ALL) NOPASSWD: ALL
+```
 
 Let's again create a new user to be able to return later:
 

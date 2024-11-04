@@ -30,6 +30,14 @@ Installing the event generator is then straightforward (if you added the falcose
 helm install event-generator falcosecurity/event-generator
 ```
 
+> **Warning:**
+>
+> Remember to uninstall the event generator when you are done testing, otherwise it will keep generating events!
+> 
+> ```sh
+> helm uninstall event-generator
+> ```
+
 The event generator will take a few seconds to start triggering events, and will continue creating them at a rate of around one per second until uninstalled.
 
 ## Investigation

