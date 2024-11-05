@@ -6,7 +6,7 @@ After installing the Spyderbat Falco integration, the Falco event generator can 
 
 If you have not already, make sure that you have installed Falco with the Spyderbat event forwarder integration. This can be done using the install script, or with the following command:
 
-> **Note:**
+> <i class="fa fa-info"></i> **Note:**
 >
 > Make sure to set the SPYDERBAT_ORG and SPYDERBAT_API_KEY values for the Falco sidekick to access the Spyderbat API.
 
@@ -30,7 +30,7 @@ Installing the event generator is then straightforward (if you added the falcose
 helm install event-generator falcosecurity/event-generator
 ```
 
-> **Warning:**
+> <i class="fa fa-warning"></i> **Warning:**
 >
 > Remember to uninstall the event generator when you are done testing, otherwise it will keep generating events!
 > 
