@@ -6,6 +6,7 @@ src = "src"
 title = "Spyderbat Samples Guidebook"
 
 [output.html]
-additional-css = ["theme/custom.css", "fontawesome/css/all.min.css"]
+additional-css = ["theme/custom.css", "fontawesome/css/all.min.css", "theme/pagetoc/styles.css"]
+additional-js = ["theme/pagetoc/main.js"]
 default-theme = "navy"
 
