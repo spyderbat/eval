@@ -6,7 +6,7 @@ After installing the Spyderbat Falco integration, the Falco event generator can 
 
 If you have not already, make sure that you have installed Falco with the Spyderbat event forwarder integration. This can be done using the install script, or with the following command:
 
-> <i class="fa fa-info"></i> **Note:**
+> <i class="fa fa-circle-info"></i> **Note:**
 >
 > Make sure to set the SPYDERBAT_ORG and SPYDERBAT_API_KEY values for the Falco sidekick to access the Spyderbat API.
 

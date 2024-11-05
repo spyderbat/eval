@@ -73,7 +73,7 @@ tar -xzf download
 ./minerd --url fakeminingpool.example.com -u ME -p passwd
 ```
 
-> <i class="fa-solid fa-info"></i> **Note:**
+> <i class="fa-solid fa-circle-info"></i> **Note:**
 > 
 > This is a real cryptominer, but is not configured to connect to a real service.
 

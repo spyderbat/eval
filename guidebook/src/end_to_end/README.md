@@ -207,7 +207,7 @@ Next, we can rig up a fake "terminal" by using a while loop:
 while true; do echo -n "$ "; read -r CMD || break; cc exec -sit $CTR bash -c "$CMD"; done; echo
 ```
 
-> <i class="fa fa-info"></i> **Note:**
+> <i class="fa fa-circle-info"></i> **Note:**
 >
 > Keep this fake terminal running for the next exploitation steps, as they assume you are running each command in the payroll pod.
 
@@ -297,7 +297,7 @@ Now that we have completed the attack, let's look at what the Spyderbat trace lo
 
 In a real environment, we would likely investigate these one at a time and eventually discover that they are all linked by checking the commands that are run. In this case, however, we know they are all from the same activity, so we can select several of the traces and start a process investigation. To make sure we get everything, expand the groups and select Spydertraces with one in each namespace: build, Falco, no namespace, and payroll-prod. You may need to scroll to the side to see the namespace column.
 
-> <i class="fa fa-info"></i> **Note**
+> <i class="fa fa-circle-info"></i> **Note**
 > 
 > If you followed the instructions for an environment without docker, your investigation will look a bit different. In particular, the traces in the payroll pod might not show up as a Spydertrace, due to how the processes were run. However, all of the `crictl` commands should show up in the Falco pod. To see the processes in the payroll pod, try using search to add in the extra context.
 >

