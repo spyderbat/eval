@@ -1,0 +1,28 @@
+/* Additional override styles */
+
+pre:has(code.language-sh):before {
+  display:inline-block;
+  font:normal normal 900 18px/1 "Open Sans", FontAwesome;
+  text-rendering:auto;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  content: "\f120";
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3rem;
+  height: 100%;
+}
+
+pre:has(code.language-sh) {
+  padding-left: 3rem;
+}
+
+code.hljs.language-sh {
+  background: var(--sidebar-bg);
+  color: var(--fg);
+}
+

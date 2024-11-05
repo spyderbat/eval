@@ -6,5 +6,6 @@ src = "src"
 title = "Spyderbat Samples Guidebook"
 
 [output.html]
+additional-css = ["theme/custom.css"]
 default-theme = "navy"
 
