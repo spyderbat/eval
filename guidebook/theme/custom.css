@@ -1,15 +1,15 @@
 /* Additional override styles */
 
-pre:has(code.language-sh):before {
+pre:has(code.language-sh):before, pre:has(code.language-py):before {
   display:inline-block;
-  font:normal normal 900 18px/1 "Open Sans", FontAwesome;
+  font:normal normal 900 14px/1 "Open Sans", FontAwesome;
   text-rendering:auto;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
-  content: "\f120";
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* align-items: center; */
+  padding-top: 1.25rem;
   position: absolute;
   top: 0;
   left: 0;
@@ -17,11 +17,20 @@ pre:has(code.language-sh):before {
   height: 100%;
 }
 
-pre:has(code.language-sh) {
+pre:has(code.language-sh):before {
+  content: "\f120";
+}
+
+pre:has(code.language-py):before {
+  font-size: 16px;
+  content: "\f3e2";
+}
+
+pre:has(code.language-sh), pre:has(code.language-py) {
   padding-left: 3rem;
 }
 
-code.hljs.language-sh {
+code.hljs.language-sh, code.hljs.language-py {
   background: var(--sidebar-bg);
   color: var(--fg);
 }
