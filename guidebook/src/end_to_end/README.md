@@ -9,6 +9,12 @@ This scenario utilizes Falco containers, so you need to have the Falco integrati
 ```sh
 kubectl get pods -n falco
 ```
+```
+NAME                                   READY   STATUS    RESTARTS        AGE
+falco-falcosidekick-6f7996c855-45lfm   1/1     Running   0               7h17m
+falco-falcosidekick-6f7996c855-vrmrt   1/1     Running   0               7h17m
+falco-mbk2n                            2/2     Running   0               7h17m
+```
 
 If it is not present, re-run the `install.sh` script in the scripts directory and enable the Falco integration.
 

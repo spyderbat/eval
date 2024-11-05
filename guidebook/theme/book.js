@@ -215,7 +215,7 @@ function playground_text(playground, hidden = true) {
 
     if (window.playground_copyable) {
         // EDIT: changed the below code to only select blocks with the language "sh"
-        Array.from(document.querySelectorAll('pre code.language-sh')).forEach(function (block) {
+        Array.from(document.querySelectorAll('pre code[class^="language"]')).forEach(function (block) {
             var pre_block = block.parentNode;
             if (!pre_block.classList.contains('playground')) {
                 var buttons = pre_block.querySelector(".buttons");

