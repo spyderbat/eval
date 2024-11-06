@@ -64,5 +64,7 @@ ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP 'rm -rf ~/.ssh/github-login
 echo
 echo "Uninstall finished"
 
+SB_EVAL_INSTALLED=0
+
 saveconfig
 

@@ -47,6 +47,8 @@ function readconfig() {
 function saveconfig() {
   SCRIPTPATH="$( cd "$(dirname -- "${BASH_SOURCE[0]}")" ; pwd -P )"
   cat << EOF > "$SCRIPTPATH/.config"
+SB_EVAL_INSTALLED=$SB_EVAL_INSTALLED
+
 KUBECTL_CONTEXT=$KUBECTL_CONTEXT
 SPYDERBAT_ORG=$SPYDERBAT_ORG
 SPYDERBAT_API_KEY=$SPYDERBAT_API_KEY
