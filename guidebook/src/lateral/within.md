@@ -133,8 +133,10 @@ cat data/db/collection-0-*.wt | nc PUBLIC_IP 1234
 
 On the public server, you should now have the collection-0 file in `download`.
 
+```sh
+ls -l
 ```
-[ec2-user@ip-172-32-65-41 ~]$ ls -l
+```
 total 20
 -rw-r--r--. 1 ec2-user ec2-user 20480 Aug 21 21:48 download
 ```
