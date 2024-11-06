@@ -7,7 +7,11 @@ source $SCRIPTPATH/prelude.sh
 if [[ "$SB_EVAL_INSTALLED" == "1" ]]; then
   echo "WARNING: running install in an already installed environment is not recommended."
   echo "Instead, run 'update.sh'. It will uninstall to clean up existing context, then re-install properly."
-  confirm "Are you sure you want to continue?" N
+  if confirm "Are you sure you want to continue?" N; then
+    echo "Continuing..."
+  else
+    exit 1
+  fi
 fi
 
 function get_falco_details() {
