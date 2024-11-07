@@ -16,10 +16,7 @@ First, list off the Clusters tracked by Spyderbat:
 ```sh
 spyctl get clusters
 ```
-
-For example:
 ```
-$ spyctl get clusters
 Getting clusters
 NAME              UID               CLUSTER_ID                            FIRST_SEEN            LAST_DATA
 spyderbateval     clus:xxxxxxxxxxx  XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX  2024-07-30T15:37:48Z  2024-07-31T13:37:48Z
@@ -28,7 +25,8 @@ spyderbateval     clus:xxxxxxxxxxx  XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX  2024-0
 Next, create a new cluster policy. This command generates a definition for a new policy generated from recently seen images within each namespace.
 
 ```sh
-spyctl create cluster-policy -C spyderbateval --namespace -n demo-cluster-policy > cluster-policy.yaml
+# Make sure to edit the cluster name to match the one you saw in the command above
+spyctl create cluster-policy -C CLUSTER_NAME --namespace -n demo-cluster-policy > cluster-policy.yaml
 ```
 
 By default, Cluster Policies have a single response action: `makeRedFlag`. This action generates a redflag that references a deviant object. Redflags are used to populate security dashboards within the Spyderbat Console, but may also be forwarded to a SIEM and/or used to trigger notifications.
@@ -55,11 +53,11 @@ In this case, however, we want to take advantage of a different feature: "Interc
       default:
       - makeRedFlag:
           severity: high
-    actions: # <--- edit these lines \/
-    - agentKillPod:
-        namespaceSelector:
-          matchLabels:
-            kubernetes.io/metadata.name: supply-chain
+    actions:                                          # <--- edit these lines
+    - agentKillPod:                                   # <---
+        namespaceSelector:                            # <---
+          matchLabels:                                # <---
+            kubernetes.io/metadata.name: supply-chain # <---
 ```
 
 Note that the `mode` for the policy is set to `audit`: this means that the policy will not take any action yet, but will instead create logs that show what actions would have been taken if the policy was in `enforce` mode.
@@ -154,8 +152,10 @@ apt update && apt -y install kali-linux-headless
 
 However, this command never gets a chance to finish, as the pod is quickly detected and killed by the new policy. Checking the list of pods reveals that it is no longer present in that namespace:
 
+```sh
+kubectl get pods -n supply-chain
 ```
-$ kubectl get pods -n supply-chain
+```
 NAME                        READY   STATUS    RESTARTS        AGE
 mongodb-845cc87dcc-9wj6n    1/1     Running   0               5d23h
 rsvp-app-586dc76544-bbtqw   1/1     Running   0               5d23h

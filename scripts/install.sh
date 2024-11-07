@@ -3,6 +3,17 @@
 SCRIPTPATH="$( cd "$(dirname -- "${BASH_SOURCE[0]}")" ; pwd -P )"
 source $SCRIPTPATH/prelude.sh
 
+# check to see if they are trying to re-install without uninstalling
+if [[ "$SB_EVAL_INSTALLED" == "1" ]]; then
+  echo "WARNING: running install in an already installed environment is not recommended."
+  echo "Instead, run 'update.sh'. It will uninstall to clean up existing context, then re-install properly."
+  if confirm "Are you sure you want to continue?" N; then
+    echo "Continuing..."
+  else
+    exit 1
+  fi
+fi
+
 function get_falco_details() {
     echo "Please enter the Spyderbat organization ID for this cluster: "
     echo "Previous value: $SPYDERBAT_ORG"
@@ -92,20 +103,24 @@ fi
 get_jumpbox_buildbox_details
 
 echo "Setting up VMs..."
-ssh-keygen -q -f buildbox_key -N ""
+rm -f $SCRIPTPATH/buildbox_key $SCRIPTPATH/buildbox_key.pub
+ssh-keygen -q -f $SCRIPTPATH/buildbox_key -N ""
 
 # setup jumpserver
-scp -i $JUMPSERVER_SSH_KEY buildbox_key $JUMPSERVER_USER@$JUMPSERVER_IP:~/.ssh/buildbox_id
+scp -i $JUMPSERVER_SSH_KEY $SCRIPTPATH/buildbox_key $JUMPSERVER_USER@$JUMPSERVER_IP:~/.ssh/buildbox_id
 scp -i $JUMPSERVER_SSH_KEY -r $SCRIPTPATH/../files/jumpserver/ $JUMPSERVER_USER@$JUMPSERVER_IP:~/
 ssh -i $JUMPSERVER_SSH_KEY $JUMPSERVER_USER@$JUMPSERVER_IP "mv -f jumpserver/.* .; rm -r jumpserver; echo 'ssh -i ~/.ssh/buildbox_id $BUILDBOX_USER@$BUILDBOX_IP' >> ~/.bash_history; sudo hostnamectl set-hostname jumpserver; echo 'export NICKNAME=jumpserver' >> ~/.bashrc"
 
 # setup buildbox
-BUILDBOX_AUTH_KEY=$(cat buildbox_key.pub)
+BUILDBOX_AUTH_KEY=$(cat $SCRIPTPATH/buildbox_key.pub)
 ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "echo '$BUILDBOX_AUTH_KEY' >> ~/.ssh/authorized_keys"
 scp -i $BUILDBOX_SSH_KEY -r $SCRIPTPATH/../files/buildbox/ $BUILDBOX_USER@$BUILDBOX_IP:~/
 ssh -i $BUILDBOX_SSH_KEY $BUILDBOX_USER@$BUILDBOX_IP "mv -f buildbox/* .;mv -f buildbox/.* .; rm -r buildbox; ssh-keygen -q -f ~/.ssh/github-login -N ''; sudo hostnamectl set-hostname buildbox; echo 'export NICKNAME=buildbox' >> ~/.bashrc"
 
 echo
 echo "Installation finished. Don't forget to install Spyderbat on these VMs if you haven't already."
+
+SB_EVAL_INSTALLED=1
+
 saveconfig
 

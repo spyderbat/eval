@@ -6,7 +6,7 @@ After installing the Spyderbat Falco integration, the Falco event generator can 
 
 If you have not already, make sure that you have installed Falco with the Spyderbat event forwarder integration. This can be done using the install script, or with the following command:
 
-> **Note:**
+> <i class="fa fa-circle-info"></i> **Note:**
 >
 > Make sure to set the SPYDERBAT_ORG and SPYDERBAT_API_KEY values for the Falco sidekick to access the Spyderbat API.
 
@@ -30,14 +30,22 @@ Installing the event generator is then straightforward (if you added the falcose
 helm install event-generator falcosecurity/event-generator
 ```
 
+> <i class="fa fa-warning"></i> **Warning:**
+>
+> Remember to uninstall the event generator when you are done testing, otherwise it will keep generating events!
+> 
+> ```sh
+> helm uninstall event-generator
+> ```
+
 The event generator will take a few seconds to start triggering events, and will continue creating them at a rate of around one per second until uninstalled.
 
 ## Investigation
 
 
-Once Falco starts detecting suspicious activity, respective “FALCO” labeled flags will be generated in the Spyderbat data stream and made visible in the Spydergraph Investigation section. These Flags can be located by running a search query. You will select the “Search” option in the left-hand navigation menu, run your search query, and then select a Flag you wish to investigate on a visual causal graph by checking the box and clicking “Start Investigation”:
+Once Falco starts detecting suspicious activity, respective “FALCO” labeled flags will be generated in the Spyderbat data stream and made visible in the Spydergraph Investigation section. These Flags can be located by running a search query. Select the “Search” option in the left-hand navigation menu, run your search query, and then select a Flag you wish to investigate on a visual causal graph by checking the box and clicking “Start Investigation”:
 
-```
+```spyql
 short_name = "falco_flag"
 ```
 
@@ -49,7 +57,7 @@ Once you click the “Start Investigation” button, you will be redirected to t
 
 ![An example of a Falco flag's details](https://spyderbat.preview.strattic.io/wp-content/uploads/2022/10/Falco-new-image7.png)
 
-You can also locate these flags by applying filtering options to our default Flags Dashboard and selecting the flags to start an Investigation this way:
+You can also locate these flags by applying filtering options to our default Flags Dashboard. Then, you can select the flags and start an Investigation from here:
 
 ![Where to find the flags dashboard](https://spyderbat.preview.strattic.io/wp-content/uploads/2022/10/filtering-flags-dashboard-1024x288.png)
 
@@ -58,7 +66,7 @@ You can also locate these flags by applying filtering options to our default Fla
 
 To stay on top of incoming Falco findings, you can create a custom dashboard card to pull in all Falco flags with desired severity by building the following search query for Redflag objects:
 
-```
+```spyql
 short_name = "falco_flag"
 ```
 

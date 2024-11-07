@@ -36,6 +36,16 @@ make docker-build
 1. Update the guidebook image by merging into the main branch and creating a new release
 2. Run the `scripts/update.sh` script with any clusters that need updating
 
+## Editing the Theme
+
+The theme is updated using override files in the `guidebook/theme` directory. Right now, there are only a few modifications:
+
+* An extra CSS stylesheet (included using files in `book.toml`)
+* The book.js file has been edited to only allow copying on code blocks with the language "sh"
+* A sidebar table of contents is added (`theme/pagetoc`)
+* updated fontawesome scripts are used
+    * To ensure the fonts are properly made available, there are two folders: `guidebook/fontawesome` for CSS and `guidebook/src/fontawesome` for fonts. MdBook will merge these folders when bulding the book
+
 ## Scripts
 
 See [Scripts](./scripts/README.md)

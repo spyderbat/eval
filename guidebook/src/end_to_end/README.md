@@ -9,6 +9,12 @@ This scenario utilizes Falco containers, so you need to have the Falco integrati
 ```sh
 kubectl get pods -n falco
 ```
+```
+NAME                                   READY   STATUS    RESTARTS        AGE
+falco-falcosidekick-6f7996c855-45lfm   1/1     Running   0               7h17m
+falco-falcosidekick-6f7996c855-vrmrt   1/1     Running   0               7h17m
+falco-mbk2n                            2/2     Running   0               7h17m
+```
 
 If it is not present, re-run the `install.sh` script in the scripts directory and enable the Falco integration.
 
@@ -168,7 +174,7 @@ curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.31.1/
 tar Cxzvf /tmp crictl-v1.31.1-linux-amd64.tar.gz
 ```
 
-Next, we can configure `crictl`, using the containerd socket we found:
+Next, we can configure `crictl`, using the attack exploit on the containerd socket we found:
 
 ```sh
 MOUNTED_SOCK_PATH=/host/run/containerd/containerd.sock 
@@ -206,6 +212,10 @@ Next, we can rig up a fake "terminal" by using a while loop:
 ```sh
 while true; do echo -n "$ "; read -r CMD || break; cc exec -sit $CTR bash -c "$CMD"; done; echo
 ```
+
+> <i class="fa fa-circle-info"></i> **Note:**
+>
+> Keep this fake terminal running for the next exploitation steps, as they assume you are running each command in the payroll pod.
 
 ### Exploitation
 
@@ -293,7 +303,7 @@ Now that we have completed the attack, let's look at what the Spyderbat trace lo
 
 In a real environment, we would likely investigate these one at a time and eventually discover that they are all linked by checking the commands that are run. In this case, however, we know they are all from the same activity, so we can select several of the traces and start a process investigation. To make sure we get everything, expand the groups and select Spydertraces with one in each namespace: build, Falco, no namespace, and payroll-prod. You may need to scroll to the side to see the namespace column.
 
-> **Note**
+> <i class="fa fa-circle-info"></i> **Note**
 > 
 > If you followed the instructions for an environment without docker, your investigation will look a bit different. In particular, the traces in the payroll pod might not show up as a Spydertrace, due to how the processes were run. However, all of the `crictl` commands should show up in the Falco pod. To see the processes in the payroll pod, try using search to add in the extra context.
 >
