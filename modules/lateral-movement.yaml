@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: lateral-movement-build
+  name: payroll-build
   labels:
     managed-by: spyderbat-eval
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: lateral-movement-prod
+  name: payroll-prod
   labels:
     managed-by: spyderbat-eval
 ---
@@ -16,7 +16,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mongo-setup
-  namespace: lateral-movement-prod
+  namespace: payroll-prod
   labels:
     managed-by: spyderbat-eval
 data:
@@ -48,7 +48,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: payrolldb
-  namespace: lateral-movement-prod
+  namespace: payroll-prod
   labels:
     app: payroll
     tier: backend
@@ -90,7 +90,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: payrolldb
-  namespace: lateral-movement-prod
+  namespace: payroll-prod
   labels:
     app: payroll
     tier: backend
@@ -108,7 +108,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: fake-bob-history
-  namespace: lateral-movement-build
+  namespace: payroll-build
   labels:
     managed-by: spyderbat-eval
 data:
@@ -116,15 +116,15 @@ data:
     ls
     kubectl config view
     kubectl get pods -A
-    kubectl get pods -n lateral-movement-prod
-    kubectl describe pods -n lateral-movement-prod
-    kubectl exec -n lateral-movement-prod payrolldb-6f7996c855-vrmrt -- hostname
+    kubectl get pods -n payroll-prod
+    kubectl describe pods -n payroll-prod
+    kubectl exec -n payroll-prod payrolldb-6f7996c855-vrmrt -- hostname
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: build-sa
-  namespace: lateral-movement-build
+  namespace: payroll-build
   labels:
     managed-by: spyderbat-eval
 ---
@@ -132,7 +132,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: role:dev
-  namespace: lateral-movement-prod
+  namespace: payroll-prod
   labels:
     managed-by: spyderbat-eval
 rules:
@@ -151,7 +151,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: build-dev-rb
-  namespace: lateral-movement-prod
+  namespace: payroll-prod
   labels:
     managed-by: spyderbat-eval
 roleRef:
@@ -161,13 +161,13 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: build-sa
-    namespace: lateral-movement-build
+    namespace: payroll-build
 ---
 apiVersion: v1
 kind: Pod
 metadata:
   name: bobdev
-  namespace: lateral-movement-build
+  namespace: payroll-build
   labels:
     managed-by: spyderbat-eval
 spec:
