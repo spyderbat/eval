@@ -9,7 +9,7 @@ For this scenario, we are going to use some debugging resources left over by Bob
 Let's exec into the developer pod to begin.
 
 ```sh
-kubectl exec -it -n lateral-movement-build bobdev -- /bin/bash
+kubectl exec -it -n payroll-build bobdev -- /bin/bash
 ```
 
 Let's take a look around to see what we can do:
@@ -48,9 +48,9 @@ history
     1  ls
     2  kubectl config view
     3  kubectl get pods -A
-    4  kubectl get pods -n lateral-movement-prod
-    5  kubectl describe pods -n lateral-movement-prod
-    6  kubectl exec -n lateral-movement-prod payrolldb-6f7996c855-vrmrt -- hostname
+    4  kubectl get pods -n payroll-prod
+    5  kubectl describe pods -n payroll-prod
+    6  kubectl exec -n payroll-prod payrolldb-6f7996c855-vrmrt -- hostname
     7  id
     8  sudo -l
     9  ps -aux
@@ -61,7 +61,7 @@ history
 It looks like the deployment he was accessing is still here:
 
 ```sh
-kubectl get pods -n lateral-movement-prod
+kubectl get pods -n payroll-prod
 ```
 ```
 NAME                         READY   STATUS    RESTARTS   AGE
@@ -71,7 +71,7 @@ payrolldb-6cd4447758-2zcq4   1/1     Running   0          3m9s
 Let's follow in Bob's footsteps.
 
 ```sh
-kubectl exec -it -n lateral-movement-prod $(kubectl get pods -n lateral-movement-prod -o jsonpath='{.items[0].metadata.name}') -- /bin/bash
+kubectl exec -it -n payroll-prod $(kubectl get pods -n payroll-prod -o jsonpath='{.items[0].metadata.name}') -- /bin/bash
 ```
 
 Now, we have ended on a pod in the production namespace, and a database pod on top of that. Let's take a look around:
