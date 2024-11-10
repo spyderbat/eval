@@ -49,7 +49,7 @@ To access the guidebook and walk through the samples, run the access command:
 
 This will use kubectl to set up port-forwarding rules to allow you to connect directly to all of the resources you just installed.
 
-Visit [localhost:8000](http://localhost:8000) to open the guidebook and get started.
+Visit [localhost:8800](http://localhost:8800) to open the guidebook and get started.
 
 ### Clean-up
 
