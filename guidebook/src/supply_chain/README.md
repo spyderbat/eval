@@ -19,7 +19,7 @@ pod/rsvp-app-587559dbf4-mbxkl   1/1     Running   0          18h
 
 NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 service/mongodb    ClusterIP   10.43.220.107   <none>        27017/TCP      25h
-service/rsvp-app   NodePort    10.43.201.79    <none>        80:30135/TCP   25h
+service/rsvp-app   ClusterIP   10.43.201.79    <none>        80/TCP         25h
 
 NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/mongodb    1/1     1            1           25h

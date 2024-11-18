@@ -39,7 +39,7 @@ metadata:
   labels:
     managed-by: spyderbat-eval
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: jupyter-notebook
   ports:
